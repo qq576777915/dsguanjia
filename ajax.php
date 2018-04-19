@@ -26,6 +26,7 @@ function king_Regular($result, $re1)
         $float1 = $matches[1][0];
     }
 
+
     return $float1;
 }
 
@@ -60,12 +61,32 @@ function king_Crawler($post, $url1, $url2)
 }
 
 switch ($act) {
+    case 'setguanjia':
+        $code = 0;
+        $tid = intval($_GET['tid']);
+        $price = intval($_GET['price']);
+        $cost = intval($_GET['cost']);
+        $cost_2 = intval($_GET['cost_2']);
+        $sql = "UPDATE `shua_guanjia` SET `price` = ".$price.", `cost` = ".$cost.", `cost2` = ".$cost_2.", `status` = 1 WHERE `shua_guanjia`.`tid` = ".$tid.";";
+        if ($DB->query($sql)) {
+            $code = 1;
+            $msg = "设置成功";
+        } else {
+            $code = 0;
+            $msg = "设置失败";
+        }
 
+        $result = array("code" => $code, "msg" => $msg);
+        exit(json_encode($result));
+        break;
     case 'getguanjia':
         $goods_id;
         $price;
         $cost;
         $cost2;
+        $price_guanjia;
+        $cost_guanjia;
+        $cost2_guanjia;
         $value;
         $price_chengben;
         $shequ;
@@ -90,9 +111,15 @@ switch ($act) {
             $shequ_pwd = $res['password'];
             $shequ_type = $res['type'];
         }
+        $rs = $DB->query("SELECT * FROM shua_guanjia WHERE tid = '$tid'");
+        while ($res = $DB->fetch($rs)) {
+            $price_guanjia = $res['price'];
+            $cost_guanjia = $res['cost'];
+            $cost2_guanjia = $res['cost2'];
+        }
 
-//            亿乐社区开始
         if ($shequ_type == 1 || $shequ_type == "1") {
+//            亿乐社区开始
             $url1 = "http://" . $shequ_url . "/index/index_ajax/user/action/login.html";
             $url2 = "http://" . $shequ_url . "/index/home/order/id/" . $goods_id . ".html";
             $post = "user=" . $shequ_account . "&pwd=" . $shequ_pwd . "";
@@ -111,13 +138,23 @@ switch ($act) {
             $re1 = '/单价为(\S+)元"/';
             $float1 = king_Regular($result, $re1);
             $price_chengben = $float1 * $value;
+        } else if ($shequ_type == 3 || $shequ_type == "3" || $shequ_type == 5 || $shequ_type == "5") {
+            //星墨社区开始
+            $post = "user=" . $shequ_account . "&pwd=" . $shequ_pwd . "&id=" . $goods_id;
+            $url1 = "http://" . $shequ_url . "/Login/UserLogin.html";
+            $url2 = "http://" . $shequ_url . "/form.html";
+            $result = king_Crawler($post, $url1, $url2);
+
+            $re1 = '/money_dian\"\>(\S+)\<\/span\>/';
+            $float1 = king_Regular($result, $re1);
+            $price_chengben = $float1 * $value;
         } else {
             $price_chengben = "暂不支持该社区的成本价格获取";
         }
         if ($price_chengben == "0") {
             $price_chengben = "商品维护";
         }
-        $data[] = array('shequ' => $shequ_type, 'chengben' => $price_chengben, 'price' => $price, 'cost' => $cost, 'cost2' => $cost2);
+        $data[] = array('shequ' => $shequ_type, 'chengben' => $price_chengben, 'price' => $price, 'cost' => $cost, 'cost2' => $cost2, 'price_guanjia' => $price_guanjia, 'cost_guanjia' => $cost_guanjia, 'cost2_guanjia' => $cost2_guanjia);
         $result = array("code" => 0, "msg" => "succ", "data" => $data);
         exit(json_encode($result));
         break;
