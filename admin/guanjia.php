@@ -72,6 +72,11 @@ $select2 = '<option value="0">请选择商品</option>';
                             <td class="col-xs-8 col-sm-8" align="center"> <span
                                         id="price_yh">0.5</span></td>
                         </tr>
+                        <tr height="25">
+                            <td class="col-xs-4 col-sm-4" align="center"> 来自社区：</td>
+                            <td class="col-xs-8 col-sm-8" align="center"> <span
+                                        id="now_shequ">****</span></td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -149,13 +154,54 @@ $select2 = '<option value="0">请选择商品</option>';
     window.onload = $("#cid").change();
 </script>
 <script>
+    function shequ_name_get($shequ_id) {
+        switch ($shequ_id){
+            case '0':
+                $shequ_name = "玖伍系统(点数下单)";
+                break;
+            case '1':
+                $shequ_name = "亿乐系统";
+                break;
+            case '2':
+                $shequ_name = "玖伍系统(余额下单)";
+                break;
+            case '3':
+                $shequ_name = "星墨系统(点数下单)";
+                break;
+            case '4':
+                $shequ_name = "星墨系统(余额下单)";
+                break;
+            case '5':
+                $shequ_name = "九流社区";
+                break;
+            case '6':
+                $shequ_name = "卡易信";
+                break;
+            case '7':
+                $shequ_name = "卡乐购";
+                break;
+            case '8':
+                $shequ_name = "卡慧卡";
+                break;
+            case '9':
+                $shequ_name = "卡商网";
+                break;
+            case '10':
+                $shequ_name = "QQbug社区";
+                break;
+            default:
+                break;
+        }
+        return $shequ_name;
+    }
     function setTable() {
+        var shequ_name ;
         var ii = layer.load(2, {shade: [0.1, '#fff']});
         var options = $("#tid option:selected");
         var tid = options.val();
         $.ajax({
             type: "GET",
-            url: "../ajax.php?act=getgoodtid&tid=" + tid,
+            url: "../ajax.php?act=getguanjia&tid=" + tid,
             dataType: 'json',
             success: function (data) {
                 layer.close(ii);
@@ -168,6 +214,7 @@ $select2 = '<option value="0">请选择商品</option>';
                         $("#price_zy").text('' + res.cost2 + '');
                         $("#price_pj").text('' + res.cost + '');
                         $("#price_yh").text('' + res.price + '');
+                        $("#now_shequ").text('' + shequ_name_get(res.shequ) + '');
                         num++;
                     });
                     $("#input_zy").val("0.9");

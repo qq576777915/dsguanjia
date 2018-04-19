@@ -7,14 +7,67 @@ $act = isset($_GET['act']) ? daddslashes($_GET['act']) : null;
 if ($is_fenzhan == true) {
     $price_obj = new Price($siterow['zid'], $siterow);
 }
+if ($conf['cjmsg'] != '') {
+    $cjmsg = $conf['cjmsg'];
+} else {
+    $cjmsg = '您今天的抽奖次数已经达到上限！';
+}
+/***
+ * 正则取购价
+ *
+ * @param $result 页面源码
+ * @param $re1 正则条件
+ * @return null 匹配内容
+ */
+function king_Regular($result, $re1)
+{
+    $float1 = null;
+    if ($c = preg_match_all($re1, $result, $matches)) {
+        $float1 = $matches[1][0];
+    }
+
+    return $float1;
+}
+
+/***
+ * 取社区商品页面源码
+ *
+ * @param $post 表单信息带帐号密码
+ * @param $url1 登录页面地址
+ * @param $url2 指定页面地址
+ * @return mixed 页面源码
+ */
+function king_Crawler($post, $url1, $url2)
+{
+    $cookie_jar = null;
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url1);
+    curl_setopt($ch, CURLOPT_HEADER, false);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+    curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_jar);
+    $result = curl_exec($ch);
+    $post = "";
+    curl_setopt($ch, CURLOPT_URL, $url2);
+    curl_setopt($ch, CURLOPT_HEADER, false);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+    curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_jar);
+    $result = curl_exec($ch);
+    curl_close($ch);
+
+    return $result;
+}
+
 switch ($act) {
 
-    case 'getgoodtid':
+    case 'getguanjia':
         $goods_id;
         $price;
         $cost;
         $cost2;
         $value;
+        $price_chengben;
         $shequ;
         $shequ_url;
         $shequ_account;
@@ -38,35 +91,61 @@ switch ($act) {
             $shequ_type = $res['type'];
         }
 
-
-        if ($shequ_type == 1 || $shequ_type == "1") {
 //            亿乐社区开始
+        if ($shequ_type == 1 || $shequ_type == "1") {
+            $url1 = "http://" . $shequ_url . "/index/index_ajax/user/action/login.html";
+            $url2 = "http://" . $shequ_url . "/index/home/order/id/" . $goods_id . ".html";
             $post = "user=" . $shequ_account . "&pwd=" . $shequ_pwd . "";
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, "http://" . $shequ_url . "/index/index_ajax/user/action/login.html");
-            curl_setopt($ch, CURLOPT_HEADER, false);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-            curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_jar);
-            $result = curl_exec($ch);
-            $post = "";
-            curl_setopt($ch, CURLOPT_URL, "http://" . $shequ_url . "/index/home/order/id/" . $goods_id . ".html");
-            curl_setopt($ch, CURLOPT_HEADER, false);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-            curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_jar);
-            $result = curl_exec($ch);
-            curl_close($ch);
+            $result = king_Crawler($post, $url1, $url2);
+
             $re1 = '/Number\(\"([0-9]+\.\S+)\"/';
-            $float1;
-            if ($c = preg_match_all($re1, $result, $matches)) {
-                $float1 = $matches[1][0];
-            }
-            
-            $data[] = array('chengben' => $float1 * $value, 'price' => $price, 'cost' => $cost, 'cost2' => $cost2);
-            $result = array("code" => 0, "msg" => "succ", "data" => $data);
-            exit(json_encode($result));
+            $float1 = king_Regular($result, $re1);
+            $price_chengben = $float1 * $value;
+        } else if ($shequ_type == 0 || $shequ_type == "0" || $shequ_type == 2 || $shequ_type == "2") {
+            //玖伍系统开始
+            $post = "username=" . $shequ_account . "&username_password=" . $shequ_pwd . "";
+            $url1 = "http://" . $shequ_url . "/index.php?m=Home&c=User&a=login&id=&goods_type=";
+            $url2 = "http://" . $shequ_url . "/index.php?m=home&c=goods&a=detail&id=" . $goods_id;
+            $result = king_Crawler($post, $url1, $url2);
+
+            $re1 = '/单价为(\S+)元"/';
+            $float1 = king_Regular($result, $re1);
+            $price_chengben = $float1 * $value;
+        } else {
+            $price_chengben = "暂不支持该社区的成本价格获取";
         }
+        if ($price_chengben == "0") {
+            $price_chengben = "商品维护";
+        }
+        $data[] = array('shequ' => $shequ_type, 'chengben' => $price_chengben, 'price' => $price, 'cost' => $cost, 'cost2' => $cost2);
+        $result = array("code" => 0, "msg" => "succ", "data" => $data);
+        exit(json_encode($result));
+        break;
+
+    case 'getcount':
+        $strtotime = strtotime($conf['build']);//获取开始统计的日期的时间戳
+        $now = time();//当前的时间戳
+        $yxts = ceil(($now - $strtotime) / 86400);//取相差值然后除于24小时(86400秒)
+        $time = date("Y-m-d") . ' 00:00:01';
+        $count1 = $DB->count("SELECT count(*)*2+1214 from shua_orders");
+        $count2 = $DB->count("SELECT count(*)*2+1210 from shua_orders where status>=1");
+        $count3 = $DB->count("SELECT sum(money)*3+3056 from shua_pay where status=1");
+        $count4 = round($count3, 2);
+        $count5 = $DB->count("SELECT count(*)*2+138 from `shua_orders` WHERE  `addtime` > '$time'");
+        $count6 = $DB->count("SELECT sum(money) FROM `shua_pay` WHERE `addtime` > '$time' AND `status` = 1");
+        $count7 = round($count6 * 3 + 359, 2);
+
+        $result = array("code" => 0, "yxts" => $yxts, "orders" => $count1, "orders1" => $count2, "orders2" => $count5, "money" => $count4, "money1" => $count7);
+        exit(json_encode($result));
+        break;
+    case 'getclass':
+        $rs = $DB->query("SELECT * FROM shua_class WHERE active=1 order by sort asc");
+        $data = array();
+        while ($res = $DB->fetch($rs)) {
+            $data[] = $res;
+        }
+        $result = array("code" => 0, "msg" => "succ", "data" => $data);
+        exit(json_encode($result));
         break;
     case 'gettool':
         if (isset($_POST['kw'])) {
