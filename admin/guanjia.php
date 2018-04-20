@@ -9,69 +9,178 @@
 include("../includes/common.php");
 $title = '代刷管家';
 //监控密匙
-$key_c = "123456";
+$key_c = "654123";
 $cron_key = $_GET['key'];
+
+
+$rs = $DB->query("SELECT * FROM `shua_guanjia` AS a WHERE tid = 0");
+while ($res = $DB->fetch($rs)) {
+    $last_cron = $res['date'];
+}
+
 if ($cron_key . ob_get_length() == 0) {
 
 } else if ($cron_key != $key_c) {
     exit("代刷管家监控密钥不正确");
 } else if ($cron_key == $key_c) {
+    /***
+     * 正则取购价
+     *
+     * @param $result 页面源码
+     * @param $re1 正则条件
+     * @return null 匹配内容
+     */
+    function king_Regular($result, $re1)
+    {
+        $float1 = null;
+        if ($c = preg_match_all($re1, $result, $matches)) {
+            $float1 = $matches[1][0];
+        }
+        return $float1;
+    }
+
+    /***
+     * 取社区商品页面源码
+     *
+     * @param $post 表单信息带帐号密码
+     * @param $url1 登录页面地址
+     * @param $url2 指定页面地址
+     * @return mixed 页面源码
+     */
+    function king_Crawler($post, $url1, $url2)
+    {
+        $cookie_jar = null;
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url1);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_jar);
+        $result = curl_exec($ch);
+        $post = "";
+        curl_setopt($ch, CURLOPT_URL, $url2);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_jar);
+        $result = curl_exec($ch);
+        curl_close($ch);
+        return $result;
+    }
+
+
+//    检测有无shua_guanjia表
+    $sql = "SELECT * FROM shua_guanjia";
+    if ($DB->query($sql)) {
+
+    } else {
+        $sql = 'CREATE TABLE IF NOT EXISTS `shua_guanjia` (
+  `tid` int(11) NOT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `cost` decimal(10,2) DEFAULT NULL,
+  `cost2` decimal(10,2) DEFAULT NULL,
+  `status` int(11) NOT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;';
+        if ($DB->query($sql)) {
+            $sql = "ALTER TABLE `shua_guanjia`
+  ADD PRIMARY KEY (`tid`);";
+            if ($DB->query($sql)) {
+                echo "检测到初次使用代刷管家，已成功导入shua_guanjia表<br>";
+            } else {
+                echo "导入shua_guanjia表失败<br>";
+            }
+        } else {
+            echo "导入shua_guanjia表失败<br>";
+        }
+    }
+
     $count_tools = $DB->count("SELECT MAX(tid) from shua_tools");
     $count_guanjia = $DB->count("SELECT MAX(tid) from shua_guanjia");
+
+    //检测有无新商品上架
     if ($count_tools > $count_guanjia) {
-        $sql = "INSERT INTO `shua_guanjia` (`tid`, `price`, `cost`, `cost2`, `status`) VALUES";
-        for ($i = $count_guanjia + 1; $i <= $count_tools; $i++) {
-            $sql = $sql . "(" . $i . ", NULL, NULL, NULL, 0)";
-            if ($i == $count_tools) {
-                $sql = $sql . ";";
-            } else {
-                $sql = $sql . ",";
-            }
-        }
+        $sql = "INSERT INTO `shua_guanjia` (`tid`, `price`, `cost`, `cost2`, `status`) VALUES(0, NULL, NULL, NULL, 0);";
         if ($DB->query($sql)) {
-            $guanjia_new = "检测有新增商品，已成功更新<br>";
+            $sql = "INSERT INTO `shua_guanjia` (`tid`, `price`, `cost`, `cost2`, `status`) VALUES";
+            for ($i = $count_guanjia + 1; $i <= $count_tools; $i++) {
+                $sql = $sql . "(" . $i . ", NULL, NULL, NULL, 0)";
+                if ($i == $count_tools) {
+                    $sql = $sql . ";";
+                } else {
+                    $sql = $sql . ",";
+                }
+            }
+            if ($DB->query($sql)) {
+                $guanjia_new = "检测有新增商品，已成功更新，请再次刷新监控地址<br>";
+            } else {
+                $guanjia_new = "检测有新增商品，更新失败<br>";
+            }
         } else {
             $guanjia_new = "检测有新增商品，更新失败<br>";
         }
-        echo $guanjia_new;
+        echo exit($guanjia_new);
     }
-    $data_1[3][$count_tools + 1];
-    $data_2[4][$count_tools + 1];
-    $sign = 1;
-    $rs = $DB->query("SELECT * FROM shua_tools");
-    while ($res = $DB->fetch($rs)) {
-        $data_1[0][$sign] = $res['price'];
-        $data_1[1][$sign] = $res['cost'];
-        $data_1[2][$sign] = $res['cost2'];
-        $sign++;
-    }
-    $sign = 0;
-    $rs = $DB->query("SELECT * FROM shua_guanjia");
-    while ($res = $DB->fetch($rs)) {
-        $data_2[0][$sign] = $res['price'];
-        $data_2[1][$sign] = $res['cost'];
-        $data_2[2][$sign] = $res['cost2'];
-        $data_2[3][$sign] = $res['status'];
-        $sign++;
-    }
-    for ($i = 1; $i <= $count_tools; $i++) {
-        if ($data_2[3][$i] == 1 || $data_2[3][$i] == "1") {
-            $data_1[0][$i] = $data_1[0][$i] + $data_2[0][$i];
-            $data_1[1][$i] = $data_1[1][$i] + $data_2[1][$i];
-            $data_1[2][$i] = $data_1[2][$i] + $data_2[2][$i];
-            $sql = "UPDATE `shua_tools` SET `price` = " . $data_1[0][$i] . ", `cost` = " . $data_1[1][$i] . ", `cost2` = " . $data_1[2][$i] . " WHERE `shua_tools`.`tid` = " . $i . ";";
-            if ($DB->query($sql)) {
-            } else {
-                $guanjia_new = "ID：" . $i . "商品，更新失败<br>";
+
+    exit("<script src=\"//lib.baomitu.com/jquery/1.12.4/jquery.min.js\"></script>
+<a>第</a><span id='load_1'>0</span><a>个/总" . $count_tools . "个，进行中....</a><br>
+<span id=\"load_2\" style=\"color:forestgreen\">如果卡着不动了，请检查相应社区是否可以正常打开</span><br><br><span style=\"color:darkblue\">代刷管家 - 在线版</span><br>
+<span style=\"color:darkblue\">作者:<a href=\"\">KING</a> &nbsp;&nbsp; 数据赞助：<a href=\"\">小学生</a></span><br>
+<script>
+    // var i = 1;
+    // setInterval(function () {
+    //     $(\"#load_1\").text(i++);
+    // }, 1000);
+
+    var sign = 1;
+
+    function setguantime() {
+      $.ajax({
+            type: \"GET\",
+            url: \"../ajax.php?act=setguantime&star=true\",
+            dataType: 'json',
+            success: function (data) {
+                if (data.code == 1) {
+                    
+                } else {
+                    alert(data.msg);
+                    return false;
+                }
+            },
+            error: function (data) {
+                alert('服务器错误');
+                return false;
             }
-            $sql = "UPDATE `shua_guanjia` SET `status` = '0' WHERE `shua_guanjia`.`tid` = " . $i . ";";
-            if ($DB->query($sql)) {
-            } else {
-                $guanjia_new = "ID：" . $i . "商品，shua_guanjia更新失败<br>";
-            }
-        }
+        });
     }
-    exit("ok<br>");
+    
+    function setguani() {
+        $.ajax({
+            type: \"GET\",
+            url: \"../ajax.php?act=setguani&tid=\" + sign,
+            dataType: 'json',
+            success: function (data) {
+                if (data.code == 1) {
+                    $(\"#load_1\").text(++sign);
+                    if (sign == " . $count_tools . " || sign == " . $count_tools . ") {
+                        setguantime();
+                        $(\"#load_2\").text(\"已完成所有商品的设置\");
+                        return false;
+                    }
+                    setguani()
+                } else {
+                    alert(data.msg);
+                    return false;
+                }
+            },
+            error: function (data) {
+                alert('服务器错误');
+                return false;
+            }
+        });
+    }
+
+    setguani();
+</script>");
 }
 
 include './head.php';
@@ -101,6 +210,8 @@ $select2 = '<option value="0">请选择商品</option>';
                                href="http://<?php echo $_SERVER['SERVER_NAME'] ?>/admin/guanjia.php?key=<?php echo $key_c ?>">http://<?php echo $_SERVER['SERVER_NAME'] ?>
                         /admin/guanjia.php?key=<?php echo $key_c ?></a><br>
                     <a class="btn btn-info btn-xs">修改监控密匙请在本页面php内容里修改</a>
+                    <a class="btn btn-danger btn-xs">开始监控之前请设置好所有商品的值！</a><br>
+                    上次监控时间：<?php echo $last_cron ?>
                 </div>
                 <div class="form-group">
                     <div class="input-group">
@@ -285,17 +396,17 @@ $select2 = '<option value="0">请选择商品</option>';
                         $("#price_pj").text('' + res.cost + '');
                         $("#price_yh").text('' + res.price + '');
                         $("#now_shequ").text('' + shequ_name_get(res.shequ) + '');
-                        if (res.cost2_guanjia == null){
+                        if (res.cost2_guanjia == null) {
                             $("#input_zy").val('');
                         } else {
                             $("#input_zy").val('' + res.cost2_guanjia + '');
                         }
-                        if (res.cost_guanjia == null){
+                        if (res.cost_guanjia == null) {
                             $("#input_pj").val('');
                         } else {
                             $("#input_pj").val('' + res.cost_guanjia + '');
                         }
-                        if (res.price_guanjia == null){
+                        if (res.price_guanjia == null) {
                             $("#input_yh").val('');
                         } else {
                             $("#input_yh").val('' + res.price_guanjia + '');
@@ -340,7 +451,7 @@ $select2 = '<option value="0">请选择商品</option>';
             dataType: 'json',
             success: function (data) {
                 layer.close(ii);
-                if (data.code == 0) {
+                if (data.code == 1) {
                     alert("设置成功，下次监控到监控地址时生效")
                 } else {
                     layer.alert(data.msg);
