@@ -40,7 +40,7 @@ if ($cron_key . ob_get_length() == 0) {
     }
 
     /***
-     * 取社区商品页面源码
+     * 爬取社区商品页面源码
      *
      * @param $post 表单信息带帐号密码
      * @param $url1 登录页面地址
