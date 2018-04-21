@@ -1,5 +1,8 @@
 <?php
 /**
+ * 代刷管家 - 在线版
+ * DSProtect OnLine
+ *
  * Created by KingLee.
  * QQ: 1776885812
  * Date: 2018/4/7
@@ -9,8 +12,80 @@
 include("../includes/common.php");
 $title = '代刷管家';
 //监控密匙
-$key_c = "654123";
+$key_c = "123456";
 $cron_key = $_GET['key'];
+
+$count_tools = $DB->count("SELECT MAX(tid) from shua_tools");
+$count_guanjia = $DB->count("SELECT MAX(tid) from shua_guanjia");
+
+//    检测有无shua_guanjia表
+$sql = "SELECT * FROM shua_guanjia";
+if ($DB->query($sql)) {
+
+} else {
+    $sql = 'CREATE TABLE IF NOT EXISTS `shua_guanjia` (
+  `tid` int(11) DEFAULT NULL,
+  `price` decimal(10,2) DEFAULT NULL,
+  `cost` decimal(10,2) DEFAULT NULL,
+  `cost2` decimal(10,2) DEFAULT NULL,
+  `status` int(11) DEFAULT NULL,
+  `date` varchar(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;';
+    if ($DB->query($sql)) {
+        $sql = "ALTER TABLE `shua_guanjia`
+  ADD PRIMARY KEY (`tid`);";
+        if ($DB->query($sql)) {
+            echo "检测到初次使用代刷管家，已成功新建shua_guanjia表<br>";
+            //检测有无新商品上架
+            if ($count_tools > $count_guanjia) {
+                $sql = "INSERT INTO `shua_guanjia` (`tid`, `price`, `cost`, `cost2`, `status`, `date`) VALUES
+(0, NULL, NULL, NULL, NULL, '2018-04-10 00:00:00');";
+                if ($DB->query($sql)) {
+                    $sql = "INSERT INTO `shua_guanjia` (`tid`, `price`, `cost`, `cost2`, `status`, `date`) VALUES";
+                    for ($i = $count_guanjia + 1; $i <= $count_tools; $i++) {
+                        $sql = $sql . "(" . $i . ", NULL, NULL, NULL, 0, NULL)";
+                        if ($i == $count_tools) {
+                            $sql = $sql . ";";
+                        } else {
+                            $sql = $sql . ",";
+                        }
+                    }
+                    if ($DB->query($sql)) {
+                        $guanjia_new = "检测有新增商品，已成功更新，请重新访问当前页面<br>";
+                    } else {
+                        $guanjia_new = "检测有新增商品，更新失败<br>";
+                    }
+                } else {
+                    $guanjia_new = "检测有新增商品，更新失败<br>";
+                }
+                echo exit($guanjia_new);
+            }
+        } else {
+            echo "导入shua_guanjia表失败<br>";
+        }
+    } else {
+        echo "导入shua_guanjia表失败<br>";
+    }
+}
+
+//检测有无新商品上架
+if ($count_tools > $count_guanjia) {
+    $sql = "INSERT INTO `shua_guanjia` (`tid`, `price`, `cost`, `cost2`, `status`, `date`) VALUES";
+    for ($i = $count_guanjia + 1; $i <= $count_tools; $i++) {
+        $sql = $sql . "(" . $i . ", NULL, NULL, NULL, 0, NULL)";
+        if ($i == $count_tools) {
+            $sql = $sql . ";";
+        } else {
+            $sql = $sql . ",";
+        }
+    }
+    if ($DB->query($sql)) {
+        $guanjia_new = "检测有新增商品，已成功更新，请刷新当前页面<br>";
+    } else {
+        $guanjia_new = "检测有新增商品，更新失败<br>";
+    }
+    echo exit($guanjia_new);
+}
 
 
 $rs = $DB->query("SELECT * FROM `shua_guanjia` AS a WHERE tid = 0");
@@ -19,7 +94,8 @@ while ($res = $DB->fetch($rs)) {
 }
 
 if ($cron_key . ob_get_length() == 0) {
-
+    if ($islogin == 1) {
+    } else exit("<script language='javascript'>window.location.href='./login.php';</script>");
 } else if ($cron_key != $key_c) {
     exit("代刷管家监控密钥不正确");
 } else if ($cron_key == $key_c) {
@@ -68,62 +144,9 @@ if ($cron_key . ob_get_length() == 0) {
         return $result;
     }
 
-
-//    检测有无shua_guanjia表
-    $sql = "SELECT * FROM shua_guanjia";
-    if ($DB->query($sql)) {
-
-    } else {
-        $sql = 'CREATE TABLE IF NOT EXISTS `shua_guanjia` (
-  `tid` int(11) NOT NULL,
-  `price` decimal(10,2) DEFAULT NULL,
-  `cost` decimal(10,2) DEFAULT NULL,
-  `cost2` decimal(10,2) DEFAULT NULL,
-  `status` int(11) NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;';
-        if ($DB->query($sql)) {
-            $sql = "ALTER TABLE `shua_guanjia`
-  ADD PRIMARY KEY (`tid`);";
-            if ($DB->query($sql)) {
-                echo "检测到初次使用代刷管家，已成功导入shua_guanjia表<br>";
-            } else {
-                echo "导入shua_guanjia表失败<br>";
-            }
-        } else {
-            echo "导入shua_guanjia表失败<br>";
-        }
-    }
-
-    $count_tools = $DB->count("SELECT MAX(tid) from shua_tools");
-    $count_guanjia = $DB->count("SELECT MAX(tid) from shua_guanjia");
-
-    //检测有无新商品上架
-    if ($count_tools > $count_guanjia) {
-        $sql = "INSERT INTO `shua_guanjia` (`tid`, `price`, `cost`, `cost2`, `status`) VALUES(0, NULL, NULL, NULL, 0);";
-        if ($DB->query($sql)) {
-            $sql = "INSERT INTO `shua_guanjia` (`tid`, `price`, `cost`, `cost2`, `status`) VALUES";
-            for ($i = $count_guanjia + 1; $i <= $count_tools; $i++) {
-                $sql = $sql . "(" . $i . ", NULL, NULL, NULL, 0)";
-                if ($i == $count_tools) {
-                    $sql = $sql . ";";
-                } else {
-                    $sql = $sql . ",";
-                }
-            }
-            if ($DB->query($sql)) {
-                $guanjia_new = "检测有新增商品，已成功更新，请再次刷新监控地址<br>";
-            } else {
-                $guanjia_new = "检测有新增商品，更新失败<br>";
-            }
-        } else {
-            $guanjia_new = "检测有新增商品，更新失败<br>";
-        }
-        echo exit($guanjia_new);
-    }
-
     exit("<script src=\"//lib.baomitu.com/jquery/1.12.4/jquery.min.js\"></script>
 <a>第</a><span id='load_1'>0</span><a>个/总" . $count_tools . "个，进行中....</a><br>
-<span id=\"load_2\" style=\"color:forestgreen\">如果卡着不动了，请检查相应社区是否可以正常打开</span><br><br><span style=\"color:darkblue\">代刷管家 - 在线版</span><br>
+<span id=\"load_2\" style=\"color:goldenrod\">如果卡着不动了，请刷新并请检查相应社区是否可以正常打开</span><br><br><span style=\"color:darkblue\">代刷管家 - 在线版</span><br>
 <span style=\"color:darkblue\">作者:<a href=\"\">KING</a> &nbsp;&nbsp; 数据赞助：<a href=\"\">小学生</a></span><br>
 <script>
     // var i = 1;
@@ -160,10 +183,11 @@ if ($cron_key . ob_get_length() == 0) {
             dataType: 'json',
             success: function (data) {
                 if (data.code == 1) {
-                    $(\"#load_1\").text(++sign);
-                    if (sign == " . $count_tools . " || sign == " . $count_tools . ") {
+                    $(\"#load_1\").text(sign++);
+                    if (sign > " . $count_tools . ") {
                         setguantime();
                         $(\"#load_2\").text(\"已完成所有商品的设置\");
+                        $(\"#load_2\").css(\"color\",\"forestgreen\");
                         return false;
                     }
                     setguani()
@@ -206,11 +230,12 @@ $select2 = '<option value="0">请选择商品</option>';
             <div class="panel-body">
                 <div class="alert alert-info">
                     此版本代挂管家不需要任何挂机宝，只需要在此页面上做好了相关设置，然后在<a href="">阿里云监控</a>/<a href="">360监控挂</a>上本页即可完成自动更新。<br>
+                    目前支持的社区：亿乐系统，玖伍系统，星墨社区<br>
                     你的监控地址为 <a target="_blank"
                                href="http://<?php echo $_SERVER['SERVER_NAME'] ?>/admin/guanjia.php?key=<?php echo $key_c ?>">http://<?php echo $_SERVER['SERVER_NAME'] ?>
                         /admin/guanjia.php?key=<?php echo $key_c ?></a><br>
                     <a class="btn btn-info btn-xs">修改监控密匙请在本页面php内容里修改</a>
-                    <a class="btn btn-danger btn-xs">开始监控之前请设置好所有商品的值！</a><br>
+                    <a class="btn btn-danger btn-xs">开始监控之前请设置好相应商品的值！</a><br>
                     上次监控时间：<?php echo $last_cron ?>
                 </div>
                 <div class="form-group">
@@ -265,13 +290,17 @@ $select2 = '<option value="0">请选择商品</option>';
                     <div class="masthead">
                         <nav>
                             <ul class="nav nav-justified">
-                                <li style="background: #EEEEEE;"><a href="#">单商品利润设置</a></li>
-                                <li><a href="#">全局利润设置</a></li>
+                                <li style="background: #EEEEEE;" id="button_dan"><a href="#">单商品利润设置</a></li>
+                                <li><a href="#" id="button_pl">全局利润设置</a></li>
                             </ul>
                         </nav>
                     </div>
                 </div>
                 <div id="dan">
+                    <div class="form-group">
+                        <div class="alert alert-info">该模块为单商品设置管家监控值，在上方选择相应商品然后下方分别填入相应要赚多少即可<br>商品售价 = 社区成本 + 管家监控值
+                        </div>
+                    </div>
                     <div class="form-group">
                         <div class="input-group">
                             <div class="input-group-addon">赚取专业版分站</div>
@@ -290,12 +319,56 @@ $select2 = '<option value="0">请选择商品</option>';
                             <input type="text" id="input_yh" class="form-control">
                         </div>
                     </div>
+                    <div class="form-group">
+                        <input type="submit" id="bt_submit" name="submit" value="保存"
+                               class="btn btn-primary form-control">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <input type="submit" id="bt_submit" name="submit" value="保存" class="btn btn-primary form-control">
+
+                <div id="pl" style="display: none">
+                    <div class="form-group">
+                        <div class="alert alert-info">
+                            该模块设置为批量百分比设置所有商品：<br>
+                            填入1.5将设置所有商品价格为成本的1.5倍，比如社区成本为1元，商品价格将设置为1.5。<br>
+                            填入2将设置所有商品价格为成本的2倍，比如社区成本为1元，商品价格将设置为2元。<br>
+                            百分比设置更贴合正常健康售价<br>
+                            商品售价 = 社区成本 * 管家批量值<br><br>
+                            推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">专业版分站：</div>
+                            <input type="text" id="input_zy_pi" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">普及版分站：</div>
+                            <input type="text" id="input_pj_pi" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">用户：</div>
+                            <input type="text" id="input_yh_pi" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" id="bt_submit_pi" name="submit" value="保存"
+                               class="btn btn-primary form-control">
+                    </div>
+                    <div class="form-group">
+                        <center id="pl_load_1" style="display: none">正在设置中<span
+                                    id="pl_load">1</span>/<?php echo $count_tools ?></center>
+                    </div>
                 </div>
             </div>
         </div>
+        <center>
+            代刷管家 - 在线版&nbsp;&nbsp;&nbsp;作者：<a href="http://wpa.qq.com/msgrd?v=3&uin=1776885812&site=qq&menu=yes">KING</a><br>
+            鸣谢以下技术支持： 数据支持：<a href="http://wpa.qq.com/msgrd?v=3&uin=985793124&site=qq&menu=yes">小学生</a> | 友情赞助： <a href="http://vps.ambitzs.cn">AM云</a> | <a href="http://aeink.com/">AE博客</a>
+        </center>
     </div>
 </div>
 </body>
@@ -303,6 +376,60 @@ $select2 = '<option value="0">请选择商品</option>';
 
 <script src="//lib.baomitu.com/layer/2.3/layer.js"></script>
 <script>
+    var sign_1 = 1;
+
+    function setguanjia_pl() {
+        var yh_pi = $("#input_yh_pi").val();
+        var pj_pi = $("#input_pj_pi").val();
+        var zy_pi = $("#input_zy_pi").val();
+        yh_pi = yh_pi * 100;
+        pj_pi = pj_pi * 100;
+        zy_pi = zy_pi * 100;
+        if (yh_pi < 1 || pj_pi < 1 || zy_pi < 1) {
+            alert("设置低于1的值将会导致最终设置成低于成本的售价！");
+            return false;
+        }
+        $.ajax({
+            type: "GET",
+            url: "../ajax.php?act=setguani_pl&tid=" + sign_1 + "&yh_pi=" + yh_pi + "&pj_pi=" + pj_pi + "&zy_pi=" + zy_pi,
+            dataType: 'json',
+            success: function (data) {
+                if (data.code == 1) {
+                    sign_1++;
+                    if (sign_1 > <?php echo $count_tools?>) {
+                        $("#pl_load_1").html("<?php echo $count_tools?>个商品已全部设置好管家值，下次监控将生效");
+                        $("#pl_load_1").css("color", "forestgreen");
+                        return false;
+                    }
+                    $("#pl_load").text(sign_1);
+                    setguanjia_pl();
+                } else {
+                    alert(data.msg);
+                }
+            },
+            error: function (data) {
+                alert('服务器错误');
+                return false;
+            }
+        });
+    }
+
+    $("#bt_submit_pi").click(function () {
+        $("#pl_load_1").show();
+        setguanjia_pl();
+    });
+    $("#button_dan").click(function () {
+        $("#button_dan").css("background", "#EEEEEE");
+        $("#button_pl").css("background", "#FFF");
+        $("#dan").slideDown();
+        $("#pl").css("display", "none");
+    });
+    $("#button_pl").click(function () {
+        $("#button_dan").css("background", "#FFF");
+        $("#button_pl").css("background", "#EEEEEE");
+        $("#dan").css("display", "none");
+        $("#pl").slideDown();
+    });
     $("#cid").change(function () {
         var cid = $(this).val();
         var ii = layer.load(2, {shade: [0.1, '#fff']});
@@ -444,6 +571,9 @@ $select2 = '<option value="0">请选择商品</option>';
         var price = $("#input_yh").val();
         var cost = $("#input_pj").val();
         var cost_2 = $("#input_zy").val();
+        price = price * 100;
+        cost = cost * 100;
+        cost_2 = cost_2 * 100;
         var ii = layer.load(2, {shade: [0.1, '#fff']});
         $.ajax({
             type: "GET",
