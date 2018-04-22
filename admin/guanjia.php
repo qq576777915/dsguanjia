@@ -43,20 +43,25 @@ if ($DB->query($sql)) {
                 if ($DB->query($sql)) {
                     $sql = "INSERT INTO `shua_guanjia` (`tid`, `price`, `cost`, `cost2`, `status`, `date`) VALUES";
                     for ($i = $count_guanjia + 1; $i <= $count_tools; $i++) {
+                        $rs = $DB->query("SELECT * FROM shua_tools WHERE tid = " . $i . ";");
+                        if ($res = $DB->fetch($rs)) {
+                        } else {
+                            continue;
+                        }
                         $sql = $sql . "(" . $i . ", NULL, NULL, NULL, 0, NULL)";
                         if ($i == $count_tools) {
-                            $sql = $sql . ";";
                         } else {
                             $sql = $sql . ",";
                         }
                     }
+                    $sql = $sql . ";";
                     if ($DB->query($sql)) {
                         $guanjia_new = "检测有新增商品，已成功更新，请重新访问当前页面<br>";
                     } else {
-                        $guanjia_new = "检测有新增商品，更新失败<br>";
+                        $guanjia_new = "检测有新增商品，更新失败，错误代码-g01<br>";
                     }
                 } else {
-                    $guanjia_new = "检测有新增商品，更新失败<br>";
+                    $guanjia_new = "检测有新增商品，更新失败，错误代码-g00<br>";
                 }
                 echo exit($guanjia_new);
             }
@@ -366,8 +371,10 @@ $select2 = '<option value="0">请选择商品</option>';
             </div>
         </div>
         <center>
-            代刷管家 - 在线版&nbsp;&nbsp;&nbsp;作者：<a href="http://wpa.qq.com/msgrd?v=3&uin=1776885812&site=qq&menu=yes">KING</a><br>
-            鸣谢以下技术支持： 数据支持：<a href="http://wpa.qq.com/msgrd?v=3&uin=985793124&site=qq&menu=yes">小学生</a> | 友情赞助： <a href="http://vps.ambitzs.cn">AM云</a> | <a href="http://aeink.com/">AE博客</a>
+            代刷管家 - 在线版&nbsp;&nbsp;&nbsp;作者：<a
+                    href="http://wpa.qq.com/msgrd?v=3&uin=1776885812&site=qq&menu=yes">KING</a><br>
+            鸣谢以下技术支持： 数据支持：<a href="http://wpa.qq.com/msgrd?v=3&uin=985793124&site=qq&menu=yes">小学生</a> | 友情赞助： <a
+                    href="http://vps.ambitzs.cn">AM云</a> | <a href="http://aeink.com/">AE博客</a>
         </center>
     </div>
 </div>

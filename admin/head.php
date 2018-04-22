@@ -33,7 +33,7 @@
           <li class="<?php echo checkIfActive('index,')?>">
             <a href="./"><span class="glyphicon glyphicon-user"></span> 平台首页</a>
           </li>
-            <li class="<?php echo checkIfActive('guanjia,')?>">
+            <li class="<?php echo checkIfActive('guanjia')?>">
                 <a href="./guanjia.php"><span class="glyphicon glyphicon-leaf"></span> 代刷管家</a>
             </li>
 		  <li class="<?php echo checkIfActive('list,export')?>">
