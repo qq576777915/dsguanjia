@@ -12,7 +12,6 @@ if ($conf['cjmsg'] != '') {
 } else {
     $cjmsg = '您今天的抽奖次数已经达到上限！';
 }
-
 /***
  * 正则取购价
  *
@@ -80,7 +79,22 @@ switch ($act) {
         exit(json_encode($result));
         break;
 
-    case 'setguani_pl':
+    case 'setguani_pl_fl_count':
+        //代刷管家 - 分类数量获取
+        $code = 0;
+        $count_fl = 0;
+        $multi = $_GET['multi'];
+        $multi_text = explode(' ', $multi);
+        for ($i = 0; $i < count($multi_text); $i++) {
+            $count1 = $DB->count("SELECT count(*) from shua_tools WHERE active  = 1 AND cid = " . $multi_text[$i]);
+            $code = 1;
+            $count_fl = $count_fl + $count1;
+        }
+
+        $result = array("code" => $code, "msg" => $count_fl);
+        exit(json_encode($result));
+
+    case 'setguani_pl_fl':
         //代刷管家 - 批量设置
         $code = 0;
         $tid = intval($_GET['tid']);
@@ -109,7 +123,6 @@ switch ($act) {
         //收集上个商品信息 0=社区ID 1=商品ID 2=商品数量 3=成本_用户 4=成本_普及 5=成本_专业
         $data_5[4][1];
 
-
         $rs = $DB->query("SELECT * FROM shua_tools WHERE tid =" . $tid);
         while ($res = $DB->fetch($rs)) {
             $data_1[0][0] = $res['price'];
@@ -120,7 +133,6 @@ switch ($act) {
             $data_3[2][0] = $res['value'];
             $data_3[4][0] = $res['is_curl'];
         }
-
 
         if ($data_3[4][0] != "2") {
             //如果是自营商品 直接跳出
@@ -232,7 +244,188 @@ switch ($act) {
             $data_3[3][0] = "0";
         }
 
-        if ( $data_3[3][0] != "0") {
+        if ($data_3[3][0] != "0") {
+            //先判断是否商品维护
+            $total_1 = $data_3[3][0] * ($yh_pi - 1);   //客户管家值
+            if ($total_1 < 0.01) {
+                $total_1 = 0.01;
+            }
+            $total_2 = $data_3[3][0] * ($pj_pi - 1);   //普及管家值
+            if ($total_2 < 0.01) {
+                $total_2 = 0.01;
+            }
+            $total_3 = $data_3[3][0] * ($zy_pi - 1);   //专业管家值
+            if ($total_3 < 0.01) {
+                $total_3 = 0.01;
+            }
+            $sql = "UPDATE `shua_guanjia` SET `price` = " . $total_1 . ", `cost` = " . $total_2 . ", `cost2` = " . $total_3 . " WHERE `shua_guanjia`.`tid` = " . $tid . ";";
+            if ($DB->query($sql)) {
+                $code = 1;
+                $msg = "设置成功";
+            } else {
+                $code = 0;
+                $msg = "设置失败，错误代码-fo1";
+            }
+        } else {
+            $code = 1;
+            $msg = "设置成功，商品维护/不支持的商品类型";
+        }
+
+        $result = array("code" => $code, "msg" => $msg . "正常流程");
+        exit(json_encode($result));
+        break;
+
+    case 'setguani_pl':
+        //代刷管家 - 批量设置
+        $code = 0;
+        $tid = intval($_GET['tid']);
+        $yh_pi = intval($_GET['yh_pi']);
+        $pj_pi = intval($_GET['pj_pi']);
+        $zy_pi = intval($_GET['zy_pi']);
+        $yh_pi = $yh_pi / 100;
+        $pj_pi = $pj_pi / 100;
+        $zy_pi = $zy_pi / 100;
+        $rs = $DB->query("SELECT * FROM shua_guanjia WHERE tid =" . $tid);
+        if ($res = $DB->fetch($rs)) {
+
+        } else {
+            $result = array("code" => 1, "msg" => "无此商品");
+            exit(json_encode($result));
+            break;
+        }
+        //收集所有商品柜价 0=客户购价 1=普及购价 2=专业购价
+        $data_1[3][1];
+        //收集所有shua_guanjia 0=客户购价 1=普及购价 2=专业购价 3=状态
+        $data_2[4][1];
+        //收集所有商品信息 0=社区ID 1=商品ID 2=数量 3=商品成本 4=商品类型
+        $data_3[5][1];
+        //收集所社区信息 0=社区URL 1=社区帐号 2=社区密码 3=社区类型
+        $data_4[4][1];
+        //收集上个商品信息 0=社区ID 1=商品ID 2=商品数量 3=成本_用户 4=成本_普及 5=成本_专业
+        $data_5[4][1];
+
+        $rs = $DB->query("SELECT * FROM shua_tools WHERE tid =" . $tid);
+        while ($res = $DB->fetch($rs)) {
+            $data_1[0][0] = $res['price'];
+            $data_1[1][0] = $res['cost'];
+            $data_1[2][0] = $res['cost2'];
+            $data_3[0][0] = $res['shequ'];
+            $data_3[1][0] = $res['goods_id'];
+            $data_3[2][0] = $res['value'];
+            $data_3[4][0] = $res['is_curl'];
+        }
+
+        if ($data_3[4][0] != "2") {
+            //如果是自营商品 直接跳出
+            $code = 1;
+            $msg = "设置成功，自营商品";
+
+            $result = array("code" => $code, "msg" => $msg);
+            exit(json_encode($result));
+            break;
+        }
+
+        $last_tid = $tid - 1;
+        $rs = $DB->query("SELECT * FROM shua_tools WHERE tid =" . $last_tid);
+        if ($res = $DB->fetch($rs)) {
+            $rs = $DB->query("SELECT * FROM shua_tools WHERE tid =" . $last_tid);
+            while ($res = $DB->fetch($rs)) {
+                $data_5[0][0] = $res['shequ'];
+                $data_5[1][0] = $res['goods_id'];
+                $data_5[2][0] = $res['value'];
+            }
+            if ($data_5[0][0] == $data_3[0][0] && $data_5[1][0] == $data_3[1][0]) {
+                //如果是与上个商品同一款
+                $rs = $DB->query("SELECT * FROM shua_guanjia WHERE tid =" . $last_tid);
+                while ($res = $DB->fetch($rs)) {
+                    $data_5[3][0] = $res['price'];
+                    $data_5[4][0] = $res['cost'];
+                    $data_5[5][0] = $res['cost2'];
+                }
+                if ($data_5[0][0] != 0 && $data_5[1][0] != 0 && $data_5[2][0] != 0 && $data_5[0][0] != null && $data_5[1][0] != null && $data_5[2][0] != null) {
+                    //上款商品不为0不为空
+                    $goods_bl = $data_3[2][0] / $data_5[2][0];
+                    $total_1 = $data_5[3][0] * $goods_bl;
+                    $total_2 = $data_5[4][0] * $goods_bl;
+                    $total_3 = $data_5[5][0] * $goods_bl;
+                    $total_1 = $total_1 * ($yh_pi - 1);
+                    $total_2 = $total_1 * ($pj_pi - 1);
+                    $total_3 = $total_1 * ($zy_pi - 1);
+                    $sql = "UPDATE `shua_guanjia` SET `price` = " . $total_1 . ", `cost` = " . $total_2 . ", `cost2` = " . $total_3 . " WHERE `shua_guanjia`.`tid` = " . $tid . ";";
+                    if ($DB->query($sql)) {
+                        $code = 1;
+                        $msg = "设置成功";
+                    } else {
+                        $code = 0;
+                        $msg = "设置失败，错误代码-fo1";
+                    }
+                    $result = array("code" => $code, "msg" => $msg . "跳过流程");
+                    exit(json_encode($result));
+                    break;
+                } else {
+                    $code = 1;
+                    $msg = "设置成功，商品维护/不支持的商品类型";
+                }
+            }
+        }
+
+        $rs = $DB->query("SELECT * FROM shua_guanjia WHERE tid =" . $tid);
+        while ($res = $DB->fetch($rs)) {
+            $data_2[0][0] = $res['price'];
+            $data_2[1][0] = $res['cost'];
+            $data_2[2][0] = $res['cost2'];
+            $data_2[3][0] = $res['status'];
+        }
+        $rs = $DB->query("SELECT * FROM shua_shequ WHERE id =" . $data_3[0][0]);
+        while ($res = $DB->fetch($rs)) {
+            $data_4[0][0] = $res['url'];
+            $data_4[1][0] = $res['username'];
+            $data_4[2][0] = $res['password'];
+            $data_4[3][0] = $res['type'];
+        }
+
+        $shequ_type = $data_4[3][0];  //社区类型
+        $shequ_url = $data_4[0][0];   //社区URL
+        $goods_id = $data_3[1][0];             //商品ID
+        $shequ_account = $data_4[1][0];   //社区帐号
+        $shequ_pwd = $data_4[2][0];    //社区密码
+        if ($shequ_type == 1 || $shequ_type == "1") {
+//            亿乐社区开始
+            $url1 = "http://" . $shequ_url . "/index/index_ajax/user/action/login.html";
+            $url2 = "http://" . $shequ_url . "/index/home/order/id/" . $goods_id . ".html";
+            $post = "user=" . $shequ_account . "&pwd=" . $shequ_pwd . "";
+            $result = king_Crawler($post, $url1, $url2);
+
+            $re1 = '/Number\(\"([0-9]+\.\S+)\"/';
+            $float1 = king_Regular($result, $re1);
+            $data_3[3][0] = $float1 * $data_3[2][0];
+        } else if ($shequ_type == 0 || $shequ_type == "0" || $shequ_type == 2 || $shequ_type == "2") {
+            //玖伍系统开始
+            $post = "username=" . $shequ_account . "&username_password=" . $shequ_pwd . "";
+            $url1 = "http://" . $shequ_url . "/index.php?m=Home&c=User&a=login&id=&goods_type=";
+            $url2 = "http://" . $shequ_url . "/index.php?m=home&c=goods&a=detail&id=" . $goods_id;
+            $result = king_Crawler($post, $url1, $url2);
+
+            $re1 = '/单价为(\S+)元"/';
+            $float1 = king_Regular($result, $re1);
+            $data_3[3][0] = $float1 * $data_3[2][0];
+
+            sleep(2);
+        } else if ($shequ_type == 3 || $shequ_type == "3" || $shequ_type == 5 || $shequ_type == "5") {
+            //星墨社区开始
+            $post = "user=" . $shequ_account . "&pwd=" . $shequ_pwd . "&id=" . $goods_id;
+            $url1 = "http://" . $shequ_url . "/Login/UserLogin.html";
+            $url2 = "http://" . $shequ_url . "/form.html";
+            $result = king_Crawler($post, $url1, $url2);
+
+            $re1 = '/money_dian\"\>(\S+)\<\/span\>/';
+            $float1 = king_Regular($result, $re1);
+            $data_3[3][0] = $float1 * $data_3[2][0];
+        } else {
+            $data_3[3][0] = "0";
+        }
+
+        if ($data_3[3][0] != "0") {
             //先判断是否商品维护
             $total_1 = $data_3[3][0] * ($yh_pi - 1);   //客户管家值
             if ($total_1 < 0.01) {
@@ -398,7 +591,7 @@ switch ($act) {
                 $data_3[3][0] = "0";
             }
 
-            if ( $data_3[3][0] != "0") {
+            if ($data_3[3][0] != "0") {
                 //先判断是否商品维护
                 if ($data_3[0][0] <= 0.01) {
                     $total_1 = 0.01;
@@ -560,10 +753,27 @@ switch ($act) {
         exit(json_encode($result));
         break;
 
+    case 'captcha':
+        require_once SYSTEM_ROOT . 'class.geetestlib.php';
+        $GtSdk = new GeetestLib($conf['captcha_id'], $conf['captcha_key']);
+        $data = array(
+            'user_id' => $cookiesid, # 网站用户id
+            'client_type' => "web", # web:电脑上的浏览器；h5:手机上的浏览器，包括移动应用内完全内置的web_view；native：通过原生SDK植入APP应用的方式
+            'ip_address' => $clientip # 请在此处传输用户请求验证时所携带的IP
+        );
+        $status = $GtSdk->pre_process($data, 1);
+        $_SESSION['gtserver'] = $status;
+        $_SESSION['user_id'] = $cookiesid;
+        echo $GtSdk->get_response_str();
+        break;
     case 'getcount':
         $strtotime = strtotime($conf['build']);//获取开始统计的日期的时间戳
         $now = time();//当前的时间戳
         $yxts = ceil(($now - $strtotime) / 86400);//取相差值然后除于24小时(86400秒)
+        if ($conf['hide_tongji'] == 1) {
+            $result = array("code" => 0, "yxts" => $yxts, "orders" => 0, "orders1" => 0, "orders2" => 0, "money" => 0, "money1" => 0);
+            exit(json_encode($result));
+        }
         $time = date("Y-m-d") . ' 00:00:01';
         $count1 = $DB->count("SELECT count(*) from shua_orders");
         $count2 = $DB->count("SELECT count(*) from shua_orders where status>=1");
@@ -668,6 +878,35 @@ switch ($act) {
                 if ($_SESSION['blockfree'] == true || $DB->count("SELECT count(*) FROM `shua_pay` WHERE `tid`='{$row['tid']}' and `money`=0 and `ip`='$clientip' and `status`=1 and `endtime`>'$thtime'") >= 1) {
                     exit('{"code":-1,"msg":"您今天已领取过，请明天再来！"}');
                 }
+                if ($conf['captcha_open'] == 1) {
+                    if (isset($_POST['geetest_challenge']) && isset($_POST['geetest_validate']) && isset($_POST['geetest_seccode'])) {
+                        require_once SYSTEM_ROOT . 'class.geetestlib.php';
+                        $GtSdk = new GeetestLib($conf['captcha_id'], $conf['captcha_key']);
+
+                        $data = array(
+                            'user_id' => $cookiesid,
+                            'client_type' => "web",
+                            'ip_address' => $clientip
+                        );
+
+                        if ($_SESSION['gtserver'] == 1) {   //服务器正常
+                            $result = $GtSdk->success_validate($_POST['geetest_challenge'], $_POST['geetest_validate'], $_POST['geetest_seccode'], $data);
+                            if ($result) {
+                                //echo '{"status":"success"}';
+                            } else {
+                                exit('{"code":-1,"msg":"验证失败，请重新验证"}');
+                            }
+                        } else {  //服务器宕机,走failback模式
+                            if ($GtSdk->fail_validate($_POST['geetest_challenge'], $_POST['geetest_validate'], $_POST['geetest_seccode'])) {
+                                //echo '{"status":"success"}';
+                            } else {
+                                exit('{"code":-1,"msg":"验证失败，请重新验证"}');
+                            }
+                        }
+                    } else {
+                        exit('{"code":2,"msg":"请先完成验证"}');
+                    }
+                }
             }
 
             $trade_no = date("YmdHis") . rand(111, 999);
@@ -697,7 +936,7 @@ switch ($act) {
                     }
                 }
             } else {
-                $sql = "insert into `shua_pay` (`trade_no`,`tid`,`zid`,`input`,`num`,`name`,`money`,`ip`,`userid`,`addtime`,`status`) values ('" . $trade_no . "','" . $tid . "','" . ($siterow['zid'] ? $siterow['zid'] : 1) . "','" . $input . "','" . $num . "','" . $tool['name'] . "','" . $need . "','" . $clientip . "','" . $cookiesid . "','" . $date . "','0')";
+                $sql = "insert into `shua_pay` (`trade_no`,`tid`,`zid`,`input`,`num`,`name`,`money`,`ip`,`userid`,`inviteid`,`addtime`,`status`) values ('" . $trade_no . "','" . $tid . "','" . ($siterow['zid'] ? $siterow['zid'] : 1) . "','" . $input . "','" . $num . "','" . $tool['name'] . "','" . $need . "','" . $clientip . "','" . $cookiesid . "','" . $invite_id . "','" . $date . "','0')";
                 if ($DB->query($sql)) {
                     unset($_SESSION['addsalt']);
                     if (isset($_SESSION['gift_id'])) {
@@ -715,7 +954,7 @@ switch ($act) {
         }
         break;
     case 'checkkm':
-        $km = daddslashes($_POST['km']);
+        $km = trim(daddslashes($_POST['km']));
         $myrow = $DB->get_row("select * from shua_kms where km='$km' limit 1");
         if (!$myrow) {
             exit('{"code":-1,"msg":"此卡密不存在！"}');
@@ -728,7 +967,7 @@ switch ($act) {
         break;
     case 'card':
         if ($conf['iskami'] == 0) exit('{"code":-1,"msg":"当前站点未开启卡密下单"}');
-        $km = daddslashes($_POST['km']);
+        $km = trim(daddslashes($_POST['km']));
         $inputvalue = trim(strip_tags(daddslashes($_POST['inputvalue'])));
         $inputvalue2 = trim(strip_tags(daddslashes($_POST['inputvalue2'])));
         $inputvalue3 = trim(strip_tags(daddslashes($_POST['inputvalue3'])));
@@ -843,21 +1082,21 @@ switch ($act) {
         exit(json_encode($result));
         break;
     case 'lqq':
-        $qq = daddslashes($_POST['qq']);
+        $qq = trim(daddslashes($_POST['qq']));
         if (empty($qq) || empty($_SESSION['addsalt']) || $_POST['salt'] != $_SESSION['addsalt']) exit('{"code":-5,"msg":"非法请求"}');
         get_curl($conf['lqqapi'] . $qq);
         $result = array("code" => 0, "msg" => "succ");
         exit(json_encode($result));
         break;
     case 'getshuoshuo':
-        $uin = daddslashes($_GET['uin']);
+        $uin = trim(daddslashes($_GET['uin']));
         $page = intval($_GET['page']);
         if (empty($uin)) exit('{"code":-5,"msg":"QQ号不能为空"}');
         $result = getshuoshuo($uin, $page);
         exit(json_encode($result));
         break;
     case 'getrizhi':
-        $uin = daddslashes($_GET['uin']);
+        $uin = trim(daddslashes($_GET['uin']));
         $page = intval($_GET['page']);
         if (empty($uin)) exit('{"code":-5,"msg":"QQ号不能为空"}');
         $result = getrizhi($uin, $page);
@@ -943,6 +1182,40 @@ switch ($act) {
         } else {
             exit('{"code":-3,"msg":"' . $DB->error() . '"}');
         }
+        break;
+    case 'inviteurl':
+        $qq = daddslashes($_POST['userqq']);
+        $hashsalt = isset($_POST['hashsalt']) ? $_POST['hashsalt'] : null;
+        if (!preg_match('/^[1-9][0-9]{4,9}$/i', $qq)) {
+            exit('{"code":0,"msg":"QQ号码格式不正确"}');
+        }
+        $key = random(6);
+        $qqrow = $DB->get_row("SELECT * FROM `shua_invite` WHERE `qq`='$qq' LIMIT 1");
+        $result = array();
+        if ($qqrow) {
+            $code = 2;
+            $url = $siteurl . '?i=' . $qqrow['key'];
+        } else {
+            $iprow = $DB->get_row("SELECT * FROM `shua_invite` WHERE `ip`='$clientip' LIMIT 1");
+            if ($iprow) {
+                $code = 2;
+                $url = $siteurl . '?i=' . $iprow['key'];
+            } else {
+                if ($conf['verify_open'] == 1 && (empty($_SESSION['addsalt']) || $hashsalt != $_SESSION['addsalt'])) {
+                    exit('{"code":-1,"msg":"验证失败，请刷新页面重试"}');
+                }
+                if ($DB->query("INSERT INTO `shua_invite` (`qq`,`key`,`ip`,`date`) VALUES ('$qq','$key','$clientip','$date')")) {
+                    unset($_SESSION['addsalt']);
+                    $code = 1;
+                    $url = $siteurl . '?i=' . $key;
+                } else {
+                    exit('{"code":-1,"msg":"' . $DB->error() . '"}');
+                }
+            }
+        }
+        if ($conf['fanghong_url']) $url = fanghongdwz($url);
+        $result = array('code' => $code, 'msg' => 'succ', 'url' => $url);
+        exit(json_encode($result));
         break;
     default:
         exit('{"code":-4,"msg":"No Act"}');

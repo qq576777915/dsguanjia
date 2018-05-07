@@ -26,6 +26,7 @@ if (!isset($_SESSION['authcode'])) {
 
 $title = '代刷管家';
 $cron_key = $_GET['key'];
+$act = $_GET['act'];
 
 $count_tools = $DB->count("SELECT MAX(tid) from shua_tools");
 $count_guanjia = $DB->count("SELECT MAX(tid) from shua_guanjia");
@@ -116,6 +117,19 @@ if ($cron_key . ob_get_length() == 0) {
     exit("代刷管家监控密钥不正确");
 } else if ($cron_key == $key_c) {
 
+    if ($act == 'del') {
+        $sql = 'DROP TABLE shua_guanjia';
+        if ($DB->query($sql)) {
+            exit("<h1>已恢复最初设置，请重新访问管家页面，自动跳转中...</h1><script type=\"text/javascript\"> 
+setTimeout(window.location.href='./guanjia.php',3000); 
+</script> ");
+        } else {
+            exit("<h1>删除失败，或已经删除成功，自动跳转中...</h1><script type=\"text/javascript\"> 
+setTimeout(window.location.href='./guanjia.php',3000); 
+</script> ");
+        }
+    }
+
     exit("<script src=\"//lib.baomitu.com/jquery/1.12.4/jquery.min.js\"></script>
 <a>第</a><span id='load_1'>0</span><a>个/总" . $count_tools . "个，进行中....</a><br>
 <span id=\"load_2\" style=\"color:goldenrod\">如果卡着不动了，请刷新并请检查相应社区是否可以正常打开</span><br><br><span style=\"color:darkblue\">代刷管家 - 在线版</span><br>
@@ -195,10 +209,12 @@ include './head.php';
 
 $rs = $DB->query("SELECT * FROM shua_class WHERE active=1 order by sort asc");
 $select = '<option value="0">请选择分类</option>';
+$select_1 = '';
 $shua_class[0] = '默认分类';
 while ($res = $DB->fetch($rs)) {
     $shua_class[$res['cid']] = $res['name'];
     $select .= '<option value="' . $res['cid'] . '">' . $res['name'] . '</option>';
+    $select_1 .= '<option value="' . $res['cid'] . '">' . $res['name'] . '</option>';
 }
 
 $select2 = '<option value="0">请选择商品</option>';
@@ -220,7 +236,8 @@ $select2 = '<option value="0">请选择商品</option>';
                         /admin/guanjia.php?key=<?php echo $key_c ?></a><br>
                     <a class="btn btn-info btn-xs">修改监控密匙请在本页面php内容里修改</a>
                     <a class="btn btn-danger btn-xs">开始监控之前请设置好相应商品的值！</a><br>
-                    上次监控时间：<?php echo $last_cron ?>
+                    上次监控时间：<?php echo $last_cron ?><br>
+                    <a class="btn btn-warning btn-xs" href="javascript:if(confirm('确认要出厂设置吗?'))location='guanjia.php?act=del&key=<?php echo $key_c ?>'">点击我将管家恢复出厂设置</a><br>
                 </div>
                 <div class="form-group">
                     <div class="input-group">
@@ -276,6 +293,7 @@ $select2 = '<option value="0">请选择商品</option>';
                             <ul class="nav nav-justified">
                                 <li style="background: #EEEEEE;" id="button_dan"><a href="#">单商品利润设置</a></li>
                                 <li><a href="#" id="button_pl">全局利润设置</a></li>
+                                <li><a href="#" id="button_pl_fl">全局利润设置（分类）</a></li>
                             </ul>
                         </nav>
                     </div>
@@ -312,7 +330,7 @@ $select2 = '<option value="0">请选择商品</option>';
                 <div id="pl" style="display: none">
                     <div class="form-group">
                         <div class="alert alert-info">
-                            该模块设置为批量百分比设置所有商品：<br>
+                            该模块设置为批量分类百分比设置所有商品：<br>
                             填入1.5将设置所有商品价格为成本的1.5倍，比如社区成本为1元，商品价格将设置为1.5。<br>
                             填入2将设置所有商品价格为成本的2倍，比如社区成本为1元，商品价格将设置为2元。<br>
                             百分比设置更贴合正常健康售价<br>
@@ -347,6 +365,52 @@ $select2 = '<option value="0">请选择商品</option>';
                                class="btn btn-primary form-control">
                     </div>
                 </div>
+
+                <div id="pl_fl" style="display: none">
+                    <div class="form-group">
+                        <div class="alert alert-info">
+                            该模块设置为批量百分比设置所有商品：<br>
+                            填入1.5将设置所有商品价格为成本的1.5倍，比如社区成本为1元，商品价格将设置为1.5。<br>
+                            填入2将设置所有商品价格为成本的2倍，比如社区成本为1元，商品价格将设置为2元。<br>
+                            百分比设置更贴合正常健康售价<br>
+                            商品售价 = 社区成本 * 管家批量值<br><br>
+                            推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">选择分类</div>
+                            <select name="cid1" id="cid1" multiple="multiple"
+                                    class="form-control"><?php echo $select_1 ?></select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">专业版分站：</div>
+                            <input type="text" id="input_zy_pi_fl" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">普及版分站：</div>
+                            <input type="text" id="input_pj_pi_fl" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">用户：</div>
+                            <input type="text" id="input_yh_pi_fl" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <center id="pl_load_1_fl" style="display: none">正在设置中<span
+                                    id="pl_load_fl">1</span>/<span id="pl_load_f2">MAX</span></center>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" id="bt_submit_pi_fl" name="submit" value="保存"
+                               class="btn btn-primary form-control">
+                    </div>
+                </div>
             </div>
         </div>
         <center>
@@ -362,6 +426,80 @@ $select2 = '<option value="0">请选择商品</option>';
 
 <script src="//lib.baomitu.com/layer/2.3/layer.js"></script>
 <script>
+
+    function setguanjia_pl_fl_count() {
+        var multi = $("#cid1").val();
+        if (multi == null) {
+            alert("不能什么都不选");
+            $("#pl_load_1_fl").html("设置失败");
+            return;
+        }
+        if (multi.length != 1) {
+            var multi_text = multi[0];
+            for (var sign = 1; sign < multi.length; sign++) {
+                multi_text = multi_text + "+" + multi[sign];
+            }
+        } else {
+            var multi_text = multi;
+        }
+        $.ajax({
+            type: "GET",
+            url: "../ajax.php?act=setguani_pl_fl_count&multi=" + multi_text,
+            dataType: 'json',
+            success: function (data) {
+                if (data.code == 1) {
+                    $("#pl_load_f2").html(data.msg);
+                }
+            },
+            error: function (data) {
+                alert('服务器错误，请重新尝试');
+                return false;
+            }
+        });
+    }
+
+    function setguanjia_pl_fl() {
+        var yh_pi = $("#input_yh_pi_fl").val();
+        var pj_pi = $("#input_pj_pi_fl").val();
+        var zy_pi = $("#input_zy_pi_fl").val();
+        if (yh_pi < 1 || pj_pi < 1 || zy_pi < 1) {
+            alert("设置低于1的值将会导致最终设置成低于成本的售价！");
+            $("#pl_load_1_fl").html("设置失败");
+            return false;
+        }
+        yh_pi = yh_pi * 100;
+        pj_pi = pj_pi * 100;
+        zy_pi = zy_pi * 100;
+        $.ajax({
+            type: "GET",
+            url: "../ajax.php?act=setguani_pl_fl&yh_pi=" + yh_pi + "&pj_pi=" + pj_pi + "&zy_pi=" + zy_pi + "&multi=" + multi,
+            dataType: 'json',
+            success: function (data) {
+                if (data.code == 1) {
+                    sign_1++;
+                    if (sign_1 > <?php echo $count_tools?>) {
+                        $("#pl_load_1").html("<?php echo $count_tools?>个商品已全部设置好管家值，下次监控将生效");
+                        $("#pl_load_1").css("color", "forestgreen");
+                        return false;
+                    }
+                    $("#pl_load").text(sign_1);
+                    setguanjia_pl();
+                } else {
+                    alert(data.msg);
+                }
+            },
+            error: function (data) {
+                if (setguanjia_pl_sign > 3) {
+                    alert('服务器错误');
+                    return false;
+                } else {
+                    setguanjia_pl();
+                    setguanjia_pl_sign++;
+                }
+            }
+        });
+    }
+
     var sign_1 = 1;
 
     var setguanjia_pl_sign = 1;
@@ -370,13 +508,14 @@ $select2 = '<option value="0">请选择商品</option>';
         var yh_pi = $("#input_yh_pi").val();
         var pj_pi = $("#input_pj_pi").val();
         var zy_pi = $("#input_zy_pi").val();
+        if (yh_pi < 1 || pj_pi < 1 || zy_pi < 1) {
+            alert("设置低于1的值将会导致最终设置成低于成本的售价！");
+            $("#pl_load_1").html("设置失败");
+            return false;
+        }
         yh_pi = yh_pi * 100;
         pj_pi = pj_pi * 100;
         zy_pi = zy_pi * 100;
-        if (yh_pi < 1 || pj_pi < 1 || zy_pi < 1) {
-            alert("设置低于1的值将会导致最终设置成低于成本的售价！");
-            return false;
-        }
         $.ajax({
             type: "GET",
             url: "../ajax.php?act=setguani_pl&tid=" + sign_1 + "&yh_pi=" + yh_pi + "&pj_pi=" + pj_pi + "&zy_pi=" + zy_pi,
@@ -407,6 +546,11 @@ $select2 = '<option value="0">请选择商品</option>';
         });
     }
 
+    $("#bt_submit_pi_fl").click(function () {
+        setguanjia_pl_fl_count();
+        $("#pl_load_1_fl").show();
+        // setguanjia_pl_fl();
+    });
     $("#bt_submit_pi").click(function () {
         $("#pl_load_1").show();
         setguanjia_pl();
@@ -414,14 +558,26 @@ $select2 = '<option value="0">请选择商品</option>';
     $("#button_dan").click(function () {
         $("#button_dan").css("background", "#EEEEEE");
         $("#button_pl").css("background", "#FFF");
+        $("#button_pl_fl").css("background", "#FFF");
         $("#dan").slideDown();
         $("#pl").css("display", "none");
+        $("#pl_fl").css("display", "none");
     });
     $("#button_pl").click(function () {
         $("#button_dan").css("background", "#FFF");
         $("#button_pl").css("background", "#EEEEEE");
+        $("#button_pl_fl").css("background", "#FFF");
         $("#dan").css("display", "none");
         $("#pl").slideDown();
+        $("#pl_fl").css("display", "none");
+    });
+    $("#button_pl_fl").click(function () {
+        $("#button_dan").css("background", "#FFF");
+        $("#button_pl").css("background", "#FFF");
+        $("#button_pl_fl").css("background", "#EEEEEE");
+        $("#dan").css("display", "none");
+        $("#pl").css("display", "none");
+        $("#pl_fl").slideDown();
     });
     $("#cid").change(function () {
         var cid = $(this).val();
