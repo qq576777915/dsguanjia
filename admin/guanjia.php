@@ -12,6 +12,7 @@
 header("Content-Type: text/html; charset=UTF-8");
 include("../includes/common.php");
 include("../admin/guanjia_key.php");
+$ver = "1.4";
 
 if (!isset($_SESSION['authcode'])) {
     $query = @file_get_contents('http://guanjia.dkfirst.cn/check.php?url=' . $_SERVER['HTTP_HOST']);
@@ -27,6 +28,7 @@ if (!isset($_SESSION['authcode'])) {
 $title = '代刷管家';
 $cron_key = $_GET['key'];
 $act = $_GET['act'];
+$mh = $_GET['mh'];
 
 $count_tools = $DB->count("SELECT MAX(tid) from shua_tools");
 $count_guanjia = $DB->count("SELECT MAX(tid) from shua_guanjia");
@@ -129,10 +131,86 @@ setTimeout(window.location.href='./guanjia.php',3000);
 </script> ");
         }
     }
+    if ($mh == '1' || $mh == 1) {
+        exit("<script src=\"//lib.baomitu.com/jquery/1.12.4/jquery.min.js\"></script>
+<a>第</a><span id='load_1'>0</span><a>个/总" . $count_tools . "个，进行中【价格美化版】....</a><br>
+<span id=\"load_2\" style=\"color:goldenrod\">如果卡着不动了，请刷新并请检查相应社区是否可以正常打开</span><br><br><span style=\"color:darkblue\">代刷管家 - 在线版 Ver:" . $ver . "</span><br>
+<span style=\"color:darkblue\">作者:<a href=\"\">KING</a> &nbsp;&nbsp; 数据赞助：<a href=\"\">小学生</a></span><br>
+<script>
+    // var i = 1;
+    // setInterval(function () {
+    //     $(\"#load_1\").text(i++);
+    // }, 1000);
 
+    var sign = 1;
+
+    var setguantime_sign = 1;
+    function setguantime() {
+      $.ajax({
+            type: \"GET\",
+            url: \"../ajax.php?act=setguantime&star=true\",
+            dataType: 'json',
+            success: function (data) {
+                if (data.code == 1) {
+                    
+                } else {
+                    alert(data.msg);
+                    return false;
+                }
+            },
+            error: function (data) {
+                if (setguantime_sign > 3){
+                alert('服务器错误'); 
+                return false;
+                } else {
+                    setguantime_sign++;
+                    setguantime();
+                }
+            }
+        });
+    }
+    
+    var setguani_sign = 1;
+    function setguani() {
+        $.ajax({
+            type: \"GET\",
+            url: \"../ajax.php?act=setguani&mh=1&tid=\" + sign,
+            dataType: 'json',
+            success: function (data) {
+                if (data.code == 1) {
+                    $(\"#load_1\").text(sign++);
+                    if (sign > " . $count_tools . ") {
+                        setguantime();
+                        $(\"#load_2\").text(\"已完成所有商品的设置\");
+                        $(\"#load_2\").css(\"color\",\"forestgreen\");
+                        return false;
+                    }
+                    setguani()
+                } else {
+                    alert(data.msg);
+                    return false;
+                }
+            },
+            error: function (data) {
+                if (setguani_sign > 3){
+                alert('服务器错误');
+                return false;
+                } else {
+                    setguani_sign++;
+                    setguani();
+                }
+            }
+        });
+    }
+
+    setguani();
+</script>");
+    }
+
+    // 美化监控结束
     exit("<script src=\"//lib.baomitu.com/jquery/1.12.4/jquery.min.js\"></script>
 <a>第</a><span id='load_1'>0</span><a>个/总" . $count_tools . "个，进行中....</a><br>
-<span id=\"load_2\" style=\"color:goldenrod\">如果卡着不动了，请刷新并请检查相应社区是否可以正常打开</span><br><br><span style=\"color:darkblue\">代刷管家 - 在线版</span><br>
+<span id=\"load_2\" style=\"color:goldenrod\">如果卡着不动了，请刷新并请检查相应社区是否可以正常打开</span><br><br><span style=\"color:darkblue\">代刷管家 - 在线版 Ver:" . $ver . "</span><br>
 <span style=\"color:darkblue\">作者:<a href=\"\">KING</a> &nbsp;&nbsp; 数据赞助：<a href=\"\">小学生</a></span><br>
 <script>
     // var i = 1;
@@ -234,10 +312,14 @@ $select2 = '<option value="0">请选择商品</option>';
                     你的监控地址为 <a target="_blank"
                                href="http://<?php echo $_SERVER['SERVER_NAME'] ?>/admin/guanjia.php?key=<?php echo $key_c ?>">http://<?php echo $_SERVER['SERVER_NAME'] ?>
                         /admin/guanjia.php?key=<?php echo $key_c ?></a><br>
-                    <a class="btn btn-info btn-xs">修改监控密匙请在本页面php内容里修改</a>
+                    你的监控地址【价格美化】为 <a target="_blank"
+                                     href="http://<?php echo $_SERVER['SERVER_NAME'] ?>/admin/guanjia.php?key=<?php echo $key_c ?>&mh=1">http://<?php echo $_SERVER['SERVER_NAME'] ?>
+                        /admin/guanjia.php?key=<?php echo $key_c ?>&mh=1</a><br>
+                    <a class="btn btn-info btn-xs">修改监控密匙请在guanjia_key.php内容里修改</a>
                     <a class="btn btn-danger btn-xs">开始监控之前请设置好相应商品的值！</a><br>
                     上次监控时间：<?php echo $last_cron ?><br>
-                    <a class="btn btn-warning btn-xs" href="javascript:if(confirm('确认要出厂设置吗?'))location='guanjia.php?act=del&key=<?php echo $key_c ?>'">点击我将管家恢复出厂设置</a><br>
+                    <a class="btn btn-warning btn-xs"
+                       href="javascript:if(confirm('确认要出厂设置吗?'))location='guanjia.php?act=del&key=<?php echo $key_c ?>'">点击我将管家恢复出厂设置</a><br>
                 </div>
                 <div class="form-group">
                     <div class="input-group">
@@ -335,7 +417,8 @@ $select2 = '<option value="0">请选择商品</option>';
                             填入2将设置所有商品价格为成本的2倍，比如社区成本为1元，商品价格将设置为2元。<br>
                             百分比设置更贴合正常健康售价<br>
                             商品售价 = 社区成本 * 管家批量值<br><br>
-                            推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5
+                            推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5<br><br>
+                            【这里只是设置管家值，真正要设置到商品价格里，请等这里跑完之后再去点击上方的监控地址】
                         </div>
                     </div>
                     <div class="form-group">
@@ -374,7 +457,8 @@ $select2 = '<option value="0">请选择商品</option>';
                             填入2将设置所有商品价格为成本的2倍，比如社区成本为1元，商品价格将设置为2元。<br>
                             百分比设置更贴合正常健康售价<br>
                             商品售价 = 社区成本 * 管家批量值<br><br>
-                            推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5
+                            推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5<br><br>
+                            【这里只是设置管家值，真正要设置到商品价格里，请等这里跑完之后再去点击上方的监控地址】
                         </div>
                     </div>
                     <div class="form-group">
@@ -417,7 +501,8 @@ $select2 = '<option value="0">请选择商品</option>';
             代刷管家 - 在线版&nbsp;&nbsp;&nbsp;作者：<a
                     href="http://wpa.qq.com/msgrd?v=3&uin=1776885812&site=qq&menu=yes">KING</a><br>
             鸣谢以下技术支持： 数据支持：<a href="http://wpa.qq.com/msgrd?v=3&uin=985793124&site=qq&menu=yes">小学生</a> | 友情赞助： <a
-                    href="http://vps.ambitzs.cn">AM云</a> | <a href="http://aeink.com/">AE博客</a>
+                    href="http://vps.ambitzs.cn">AM云</a> | <a href="http://aeink.com/">AE博客</a><br>
+            当前版本：<?php echo $ver?>  历史版本：<a target="_blank" href="http://zeink.cn/?p=255">【点击查看】</a>
         </center>
     </div>
 </div>
@@ -428,34 +513,35 @@ $select2 = '<option value="0">请选择商品</option>';
 <script>
 
     function setguanjia_pl_fl_count() {
-        var multi = $("#cid1").val();
-        if (multi == null) {
-            alert("不能什么都不选");
-            $("#pl_load_1_fl").html("设置失败");
-            return;
-        }
-        if (multi.length != 1) {
-            var multi_text = multi[0];
-            for (var sign = 1; sign < multi.length; sign++) {
-                multi_text = multi_text + "+" + multi[sign];
-            }
-        } else {
-            var multi_text = multi;
-        }
-        $.ajax({
-            type: "GET",
-            url: "../ajax.php?act=setguani_pl_fl_count&multi=" + multi_text,
-            dataType: 'json',
-            success: function (data) {
-                if (data.code == 1) {
-                    $("#pl_load_f2").html(data.msg);
-                }
-            },
-            error: function (data) {
-                alert('服务器错误，请重新尝试');
-                return false;
-            }
-        });
+        swal("敬请期待！", "作者忙于学校的项目开发，此功能还未写完，等至暑假就会有时间","info")
+        // var multi = $("#cid1").val();
+        // if (multi == null) {
+        //     alert("不能什么都不选");
+        //     $("#pl_load_1_fl").html("设置失败");
+        //     return;
+        // }
+        // if (multi.length != 1) {
+        //     var multi_text = multi[0];
+        //     for (var sign = 1; sign < multi.length; sign++) {
+        //         multi_text = multi_text + "+" + multi[sign];
+        //     }
+        // } else {
+        //     var multi_text = multi;
+        // }
+        // $.ajax({
+        //     type: "GET",
+        //     url: "../ajax.php?act=setguani_pl_fl_count&multi=" + multi_text,
+        //     dataType: 'json',
+        //     success: function (data) {
+        //         if (data.code == 1) {
+        //             $("#pl_load_f2").html(data.msg);
+        //         }
+        //     },
+        //     error: function (data) {
+        //         alert('服务器错误，请重新尝试');
+        //         return false;
+        //     }
+        // });
     }
 
     function setguanjia_pl_fl() {

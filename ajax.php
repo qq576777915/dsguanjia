@@ -12,6 +12,7 @@ if ($conf['cjmsg'] != '') {
 } else {
     $cjmsg = '您今天的抽奖次数已经达到上限！';
 }
+
 /***
  * 正则取购价
  *
@@ -31,8 +32,8 @@ function king_Regular($result, $re1)
 }
 
 /***
- * 取社区商品页面源码
  *
+ *取社区商品页面源码
  * @param $post 表单信息带帐号密码
  * @param $url1 登录页面地址
  * @param $url2 指定页面地址
@@ -61,7 +62,6 @@ function king_Crawler($post, $url1, $url2)
 }
 
 switch ($act) {
-
     case 'setguantime':
         //代刷管家 - 设置最后监控时间
         $code = 0;
@@ -460,6 +460,7 @@ switch ($act) {
         //代刷管家 - Core 遍历设置
         $code = 0;
         $tid = intval($_GET['tid']);
+        $mh = intval($_GET['mh']);
 
         //收集所有商品柜价 0=客户购价 1=普及购价 2=专业购价
         $data_1[3][1];
@@ -604,6 +605,16 @@ switch ($act) {
                 }
                 if ($total_1 != $data_1[0][0] || $total_2 != $data_1[1][0] || $total_3 != $data_1[2][0]) {
                     //判断是否符合管家价格线
+                    if ($mh == 1 || $mh == '1') {
+                        //美化
+                        if ($total_1 < 0.1){
+
+                        } else{
+                            $total_1 = round($total_1, 1);
+                            $total_2 = round($total_2, 1);
+                            $total_3 = round($total_3, 1);
+                        }
+                    }
                     $sql = "UPDATE `shua_tools` SET `price` = " . $total_1 . ", `cost` = " . $total_2 . ", `cost2` = " . $total_3 . " WHERE `shua_tools`.`tid` = " . $tid . ";";
                     if ($DB->query($sql)) {
                         $code = 1;
@@ -752,7 +763,6 @@ switch ($act) {
         $result = array("code" => 0, "msg" => "succ", "data" => $data);
         exit(json_encode($result));
         break;
-
     case 'captcha':
         require_once SYSTEM_ROOT . 'class.geetestlib.php';
         $GtSdk = new GeetestLib($conf['captcha_id'], $conf['captcha_key']);
@@ -771,8 +781,25 @@ switch ($act) {
         $now = time();//当前的时间戳
         $yxts = ceil(($now - $strtotime) / 86400);//取相差值然后除于24小时(86400秒)
         if ($conf['hide_tongji'] == 1) {
-            $result = array("code" => 0, "yxts" => $yxts, "orders" => 0, "orders1" => 0, "orders2" => 0, "money" => 0, "money1" => 0);
+            $result = array("code" => 0, "yxts" => $yxts, "orders" => 0, "orders1" => 0, "orders2" => 0, "money" => 0, "money1" => 0, "gift" => $gift);
             exit(json_encode($result));
+        }
+        if ($conf['tongji_time'] > 0) {
+            $tongji_cachetime = $DB->get_column("SELECT v FROM shua_config WHERE k='tongji_cachetime' limit 1");
+            $tongji_cache = $DB->get_column("SELECT v FROM shua_config WHERE k='tongji_cache' limit 1");
+            if ($tongji_cachetime + intval($conf['tongji_time']) >= time() && $tongji_cache) {
+                $array = unserialize($tongji_cache);
+                $result = array("code" => 0, "yxts" => $yxts, "orders" => $array['orders'], "orders1" => $array['orders1'], "orders2" => $array['orders2'], "money" => $array['money'], "money1" => $array['money1'], "gift" => $array['gift']);
+                exit(json_encode($result));
+            }
+        }
+        if ($conf['gift_log'] == 1) {
+            $gift = array();
+            $list = $DB->query("SELECT a.*,(select b.name from shua_gift as b where a.gid=b.id) as name FROM shua_giftlog as a WHERE status=1 ORDER BY id DESC");
+            while ($cjlist = $DB->fetch($list)) {
+                if (!$cjlist['input']) continue;
+                $gift[$cjlist['input']] = $cjlist['name'];
+            }
         }
         $time = date("Y-m-d") . ' 00:00:01';
         $count1 = $DB->count("SELECT count(*) from shua_orders");
@@ -782,8 +809,12 @@ switch ($act) {
         $count5 = $DB->count("SELECT count(*) from `shua_orders` WHERE  `addtime` > '$time'");
         $count6 = $DB->count("SELECT sum(money) FROM `shua_pay` WHERE `addtime` > '$time' AND `status` = 1");
         $count7 = round($count6, 2);
+        if ($conf['tongji_time'] > 0) {
+            saveSetting('tongji_cachetime', time());
+            saveSetting('tongji_cache', serialize(array("orders" => $count1, "orders1" => $count2, "orders2" => $count5, "money" => $count4, "money1" => $count7, "gift" => $gift)));
+        }
 
-        $result = array("code" => 0, "yxts" => $yxts, "orders" => $count1, "orders1" => $count2, "orders2" => $count5, "money" => $count4, "money1" => $count7);
+        $result = array("code" => 0, "yxts" => $yxts, "orders" => $count1, "orders1" => $count2, "orders2" => $count5, "money" => $count4, "money1" => $count7, "gift" => $gift);
         exit(json_encode($result));
         break;
     case 'getclass':
@@ -812,7 +843,7 @@ switch ($act) {
                 if ($price_obj->getToolDel($res['tid']) == 1) continue;
                 $price = $price_obj->getToolPrice($res['tid']);
             } else $price = $res['price'];
-            $data[] = array('tid' => $res['tid'], 'sort' => $res['sort'], 'name' => $res['name'], 'value' => $res['value'], 'price' => $price, 'input' => $res['input'], 'inputs' => $res['inputs'], 'alert' => $res['alert'], 'repeat' => $res['repeat'], 'multi' => $res['multi'], 'isfaka' => $res['is_curl'] == 4 ? 1 : 0);
+            $data[] = array('tid' => $res['tid'], 'sort' => $res['sort'], 'name' => $res['name'], 'value' => $res['value'], 'price' => $price, 'input' => $res['input'], 'inputs' => $res['inputs'], 'alert' => $res['alert'], 'shopimg' => $res['shopimg'], 'repeat' => $res['repeat'], 'multi' => $res['multi'], 'isfaka' => $res['is_curl'] == 4 ? 1 : 0);
         }
         $result = array("code" => 0, "msg" => "succ", "data" => $data);
         exit(json_encode($result));
@@ -918,7 +949,7 @@ switch ($act) {
                 if ($DB->query($sql)) {
                     unset($_SESSION['addsalt']);
                     if (isset($_SESSION['gift_id'])) {
-                        $DB->query("update `shua_giftlog` set `status` =1,`tradeno` ='$trade_no' where `id`='$gift_id'");
+                        $DB->query("update `shua_giftlog` set `status` =1,`tradeno` ='$trade_no',`input` ='$inputvalue' where `id`='$gift_id'");
                         unset($_SESSION['gift_id']);
                         unset($_SESSION['gift_tid']);
                     }
@@ -1041,11 +1072,20 @@ switch ($act) {
             if ($shequ['type'] == 1) {
                 $list = yile_chadan($shequ['url'], $tool['goods_id'], $row['input'], $row['djorder']);
             } elseif ($shequ['type'] == 0 || $shequ['type'] == 2) {
-                $list = jiuwu_chadan($shequ['url'], $tool['goods_id'], $row['input'], $row['djorder']);
+                $list = jiuwu_chadan($shequ['url'], $shequ['username'], $shequ['password'], $row['djorder']);
             } elseif ($shequ['type'] == 3 || $shequ['type'] == 5) {
                 $list = xmsq_chadan($shequ['url'], $tool['goods_id'], $row['input'], $row['djorder']);
             } elseif ($shequ['type'] == 10) {
                 $list = qqbug_chadan($shequ['password'], $row['djorder']);
+            } elseif ($shequ['type'] == 11) {
+                $list = jumeng_chadan($shequ['url'], $row['djorder']);
+            } elseif ($shequ['type'] == 20) {
+                if (class_exists("ExtendAPI") && method_exists('ExtendAPI', 'chadan')) {
+                    $list = ExtendAPI::chadan($shequ['url'], $shequ['username'], $shequ['password'], $row['djorder'], $tool['goods_id'], $row['input']);
+                }
+            }
+            if ($list['order_state'] == '已完成' && $row['status'] == 2) {
+                $DB->query("update shua_orders set status=1 where id='{$id}'");
             }
         } elseif ($tool['is_curl'] == 4) {
             $count = $row['value'];
@@ -1100,6 +1140,12 @@ switch ($act) {
         $page = intval($_GET['page']);
         if (empty($uin)) exit('{"code":-5,"msg":"QQ号不能为空"}');
         $result = getrizhi($uin, $page);
+        exit(json_encode($result));
+        break;
+    case 'getkuaishou':
+        $url = trim($_POST['url']);
+        if (empty($url)) exit('{"code":-5,"msg":"url不能为空"}');
+        $result = getkuaishou($url);
         exit(json_encode($result));
         break;
     case 'gift_start':
