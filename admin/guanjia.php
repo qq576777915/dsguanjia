@@ -599,7 +599,7 @@ $select2 = '<option value="0">请选择商品</option>';
             $("#pl_load_1").html("设置失败");
             return false;
         }
-        yh_pi = yh_pi * 100;
+        yh_pi = yh_pi * 100; //
         pj_pi = pj_pi * 100;
         zy_pi = zy_pi * 100;
         $.ajax({
