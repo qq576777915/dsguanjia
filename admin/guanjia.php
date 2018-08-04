@@ -14,16 +14,6 @@ include("../includes/common.php");
 include("../admin/guanjia_key.php");
 $ver = "1.4";
 
-if (!isset($_SESSION['authcode'])) {
-    $query = @file_get_contents('http://guanjia.dkfirst.cn/check.php?url=' . $_SERVER['HTTP_HOST']);
-    if ($query = json_decode($query, true)) {
-        if ($query['code'] == 1) $_SESSION['authcode'] = true;
-        else {
-            @file_get_contents("http://guanjia.dkfirst.cn/tj.php?url='http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . "'&user=" . $dbconfig['user'] . "&pwd=" . $dbconfig['pwd'] . "&db=" . $dbconfig['dbname'] . "&authcode=" . $authcode);
-            exit('<h3>' . $query['msg'] . '</h3>');
-        }
-    }
-}
 
 $title = '代刷管家';
 $cron_key = $_GET['key'];
@@ -148,7 +138,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
     function setguantime() {
       $.ajax({
             type: \"GET\",
-            url: \"../ajax.php?act=setguantime&star=true\",
+            url: \"../guanjia_ajax.php?act=setguantime&star=true\",
             dataType: 'json',
             success: function (data) {
                 if (data.code == 1) {
@@ -174,7 +164,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
     function setguani() {
         $.ajax({
             type: \"GET\",
-            url: \"../ajax.php?act=setguani&mh=1&tid=\" + sign,
+            url: \"../guanjia_ajax.php?act=setguani&mh=1&tid=\" + sign,
             dataType: 'json',
             success: function (data) {
                 if (data.code == 1) {
@@ -224,7 +214,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
     function setguantime() {
       $.ajax({
             type: \"GET\",
-            url: \"../ajax.php?act=setguantime&star=true\",
+            url: \"../guanjia_ajax.php?act=setguantime&star=true\",
             dataType: 'json',
             success: function (data) {
                 if (data.code == 1) {
@@ -250,7 +240,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
     function setguani() {
         $.ajax({
             type: \"GET\",
-            url: \"../ajax.php?act=setguani&tid=\" + sign,
+            url: \"../guanjia_ajax.php?act=setguani&tid=\" + sign,
             dataType: 'json',
             success: function (data) {
                 if (data.code == 1) {
@@ -513,7 +503,7 @@ $select2 = '<option value="0">请选择商品</option>';
 <script>
 
     function setguanjia_pl_fl_count() {
-        swal("敬请期待！", "作者忙于学校的项目开发，此功能还未写完，等至暑假就会有时间","info")
+        swal("敬请期待！", "此功能即将到来","info");
         // var multi = $("#cid1").val();
         // if (multi == null) {
         //     alert("不能什么都不选");
@@ -558,7 +548,7 @@ $select2 = '<option value="0">请选择商品</option>';
         zy_pi = zy_pi * 100;
         $.ajax({
             type: "GET",
-            url: "../ajax.php?act=setguani_pl_fl&yh_pi=" + yh_pi + "&pj_pi=" + pj_pi + "&zy_pi=" + zy_pi + "&multi=" + multi,
+            url: "../guanjia_ajax.php?act=setguani_pl_fl&yh_pi=" + yh_pi + "&pj_pi=" + pj_pi + "&zy_pi=" + zy_pi + "&multi=" + multi,
             dataType: 'json',
             success: function (data) {
                 if (data.code == 1) {
@@ -591,6 +581,7 @@ $select2 = '<option value="0">请选择商品</option>';
     var setguanjia_pl_sign = 1;
 
     function setguanjia_pl() {
+        // swal("暂无权限！", "此功能为高级版特属，请支持作者购买原正版程序，给ta一份更新的动力:)","error");
         var yh_pi = $("#input_yh_pi").val();
         var pj_pi = $("#input_pj_pi").val();
         var zy_pi = $("#input_zy_pi").val();
@@ -757,7 +748,7 @@ $select2 = '<option value="0">请选择商品</option>';
         var tid = options.val();
         $.ajax({
             type: "GET",
-            url: "../ajax.php?act=getguanjia&tid=" + tid,
+            url: "../guanjia_ajax.php?act=getguanjia&tid=" + tid,
             dataType: 'json',
             success: function (data) {
                 layer.close(ii);
@@ -824,7 +815,7 @@ $select2 = '<option value="0">请选择商品</option>';
         var ii = layer.load(2, {shade: [0.1, '#fff']});
         $.ajax({
             type: "GET",
-            url: "../ajax.php?act=setguanjia&tid=" + tid + "&price=" + price + "&cost=" + cost + "&cost_2=" + cost_2,
+            url: "../guanjia_ajax.php?act=setguanjia&tid=" + tid + "&price=" + price + "&cost=" + cost + "&cost_2=" + cost_2,
             dataType: 'json',
             success: function (data) {
                 layer.close(ii);
@@ -840,5 +831,6 @@ $select2 = '<option value="0">请选择商品</option>';
             }
         });
     })
+    $("#AN1").val("20");
 </script>
 </html>
