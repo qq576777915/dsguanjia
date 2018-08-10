@@ -217,7 +217,8 @@ setTimeout(window.location.href='./guanjia.php',3000);
 
     // 美化监控结束
     exit("<script src=\"//lib.baomitu.com/jquery/1.12.4/jquery.min.js\"></script>
-<a>第</a><span id='load_1'>0</span><a>个/总" . $count_tools . "个，进行中<img id=\"loading_img\" style=\"width:20px;\" src=\"http://cdn.dkfirst.cn/loading-2.gif\">&nbsp;<button id=\"again_bt1\" onclick=\"setguani()\" class=\"btn btn-info btn-sm\" style=\"display: none;\"></a><br>
+<a>第</a><span id='load_1'>0</span><a>个/总" . $count_tools . "个，进行中<img id=\"loading_img\" style=\"width:20px;\" src=\"http://cdn.dkfirst.cn/loading-2.gif\">&nbsp;<button id=\"again_bt1\" onclick=\"setguani()\" class=\"btn btn-info btn-sm\" style=\"display: none;\">重试当前商品
+                            </button></a><br>
 <span id=\"load_2\" style=\"color:goldenrod\">如果卡着不动了，请刷新并请检查相应社区是否可以正常打开</span><br><br><span style=\"color:darkblue\">代刷管家 - 在线版 Ver:" . $ver . "</span><br>
 <span style=\"color:darkblue\">作者:<a href=\"\">KING</a> &nbsp;&nbsp; 服务引擎支持：<a href=\"http://www.idcyun.wang\"><img src=\"http://gj.dkfirst.cn/images/jmyidc.png\" style=\"width: 70px;\"></a></span><br>
 <script>
