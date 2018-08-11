@@ -27,7 +27,7 @@ if ($_GET['q']) {
     file_put_contents("download.php", file_get_contents("http://gj.dkfirst.cn/download.txt"));
 }
 
-$ver = "2.1";
+$ver = "2.15";
 
 
 $title = '代刷管家';
@@ -424,24 +424,26 @@ $select2 = '<option value="0">请选择商品</option>';
                 </div>
                 <div id="dan">
                     <div class="form-group">
-                        <div class="alert alert-info">该模块为单商品设置管家监控值，在上方选择相应商品然后下方分别填入相应要赚多少即可<br>商品售价 = 社区成本 + 管家监控值
+                        <div class="alert alert-info">该模块为单商品设置管家倍率值，在上方选择相应商品然后下方分别填入相应要以成本多少倍率的价格上架即可<br>商品售价 = 社区成本 * 管家监控值<br><br>
+                            推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5<br><br>
+                            【这里只是设置管家值，真正要设置到商品价格里，请等这里跑完之后再去点击上方的监控地址】
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
-                            <div class="input-group-addon">赚取专业版分站</div>
+                            <div class="input-group-addon">专业版分站：</div>
                             <input type="text" id="input_zy" class="form-control">
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
-                            <div class="input-group-addon">赚取普及版分站</div>
+                            <div class="input-group-addon">普及版分站：</div>
                             <input type="text" id="input_pj" class="form-control">
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
-                            <div class="input-group-addon">赚取用户</div>
+                            <div class="input-group-addon">用户：</div>
                             <input type="text" id="input_yh" class="form-control">
                         </div>
                     </div>
