@@ -190,8 +190,8 @@ switch ($act) {
         $data_2[4][1];
         //收集所有商品信息 0=社区ID 1=商品ID 2=数量 3=商品成本 4=商品类型
         $data_3[5][1];
-        //收集所社区信息 0=社区URL 1=社区帐号 2=社区密码 3=社区类型
-        $data_4[4][1];
+        //收集所社区信息 0=社区URL 1=社区帐号 2=社区密码 3=社区类型 4=paytype(九五时 点数下单0 余额下单1)
+        $data_4[5][1];
         //收集上个商品信息 0=社区ID 1=商品ID 2=商品数量 3=成本_用户 4=成本_普及 5=成本_专业
         $data_5[4][1];
 
@@ -273,6 +273,7 @@ switch ($act) {
             $data_4[1][0] = $res['username'];
             $data_4[2][0] = $res['password'];
             $data_4[3][0] = $res['type'];
+            $data_4[4][0] = $res['paytype'];
         }
 
         $shequ_type = $data_4[3][0];  //社区类型
@@ -308,8 +309,10 @@ switch ($act) {
             $url2 = "http://" . $shequ_url . "/index.php?m=home&c=goods&a=detail&id=" . $goods_id;
             $result = king_Crawler($post, $url1, $url2);
 
-            $re1 = '/单价为(\S+)元"/';
-            $float1 = king_Regular($result, $re1);
+//            $re1 = '/单价为(\S+)元"/';
+//            $float1 = king_Regular($result, $re1);
+
+            $float1 = midstr($result, "单价为", "元\">");
             $data_3[3][0] = $float1 * $data_3[2][0];
 
             sleep(2);
@@ -382,8 +385,8 @@ switch ($act) {
         $data_2[4][1];
         //收集所有商品信息 0=社区ID 1=商品ID 2=数量 3=商品成本 4=商品类型
         $data_3[5][1];
-        //收集所社区信息 0=社区URL 1=社区帐号 2=社区密码 3=社区类型
-        $data_4[4][1];
+        //收集所社区信息 0=社区URL 1=社区帐号 2=社区密码 3=社区类型 4=paytype(九五时 点数下单0 余额下单1)
+        $data_4[5][1];
         //收集上个商品信息 0=社区ID 1=商品ID 2=商品数量 3=成本_用户 4=成本_普及 5=成本_专业
         $data_5[4][1];
 
@@ -465,6 +468,7 @@ switch ($act) {
             $data_4[1][0] = $res['username'];
             $data_4[2][0] = $res['password'];
             $data_4[3][0] = $res['type'];
+            $data_4[4][0] = $res['paytype'];
         }
 
         $shequ_type = $data_4[3][0];  //社区类型
@@ -500,8 +504,10 @@ switch ($act) {
             $url2 = "http://" . $shequ_url . "/index.php?m=home&c=goods&a=detail&id=" . $goods_id;
             $result = king_Crawler($post, $url1, $url2);
 
-            $re1 = '/单价为(\S+)元"/';
-            $float1 = king_Regular($result, $re1);
+//            $re1 = '/单价为(\S+)元"/';
+//            $float1 = king_Regular($result, $re1);
+
+            $float1 = midstr($result, "单价为", "元\">");
             $data_3[3][0] = $float1 * $data_3[2][0];
 
             sleep(2);
@@ -561,8 +567,8 @@ switch ($act) {
         $data_2[4][1];
         //收集商品信息 0=社区ID 1=商品ID 2=数量 3=商品成本 4=商品类型
         $data_3[4][1];
-        //收集所社区信息 0=社区URL 1=社区帐号 2=社区密码 3=社区类型
-        $data_4[4][1];
+        //收集所社区信息 0=社区URL 1=社区帐号 2=社区密码 3=社区类型 4=paytype(九五时 点数下单0 余额下单1)
+        $data_4[5][1];
         //收集上个商品信息 0=社区ID 1=商品ID 2=商品数量 3=成本_用户 4=成本_普及 5=成本_专业
         $data_5[4][1];
         $rs = $DB->query("SELECT * FROM shua_tools WHERE tid =" . $tid);
@@ -634,6 +640,7 @@ switch ($act) {
             $data_4[1][0] = $res['username'];
             $data_4[2][0] = $res['password'];
             $data_4[3][0] = $res['type'];
+            $data_4[4][0] = $res['paytype'];
         }
         if ($data_2[0][0] . ob_get_length() != 0 || $data_2[1][0] . ob_get_length() != 0 || $data_2[2][0] . ob_get_length() != 0) {
             //判断用户是否设置了管家值
@@ -670,8 +677,10 @@ switch ($act) {
                 $url2 = "http://" . $shequ_url . "/index.php?m=home&c=goods&a=detail&id=" . $goods_id;
                 $result = king_Crawler($post, $url1, $url2);
 
-                $re1 = '/单价为(\S+)元"/';
-                $float1 = king_Regular($result, $re1);
+//                $re1 = '/单价为(\S+)元"/';
+//                $float1 = king_Regular($result, $re1);
+
+                $float1 = midstr($result, "单价为", "元\">");
                 $data_3[3][0] = $float1 * $data_3[2][0];
                 sleep(2);
             } else if ($shequ_type == 3 || $shequ_type == "3" || $shequ_type == 5 || $shequ_type == "5") {
@@ -779,6 +788,7 @@ switch ($act) {
         $shequ_account;
         $shequ_pwd;
         $shequ_type;
+        $shequ_paytype;
         //是否社区商品
         $is_curl;
         $tid = intval($_GET['tid']);
@@ -800,6 +810,7 @@ switch ($act) {
             $shequ_account = $res['username'];
             $shequ_pwd = $res['password'];
             $shequ_type = $res['type'];
+            $shequ_paytype = $res['paytype'];
         }
         $rs = $DB->query("SELECT * FROM shua_guanjia WHERE tid = '$tid'");
         while ($res = $DB->fetch($rs)) {
@@ -837,8 +848,10 @@ switch ($act) {
                 $url2 = "http://" . $shequ_url . "/index.php?m=home&c=goods&a=detail&id=" . $goods_id;
                 $result = king_Crawler($post, $url1, $url2);
 
-                $re1 = '/单价为(\S+)元"/';
-                $float1 = king_Regular($result, $re1);
+
+//                $re1 = '/单价为(\S+)元"/';
+//                $float1 = king_Regular($result, $re1);
+                $float1 = midstr($result, "单价为", "元\">");
                 $price_chengben = $float1 * $value;
             } else if ($shequ_type == 3 || $shequ_type == "3" || $shequ_type == 5 || $shequ_type == "5") {
                 //星墨社区开始
@@ -855,6 +868,11 @@ switch ($act) {
             }
             if ($price_chengben == "0") {
                 $price_chengben = "商品维护";
+            }
+        }
+        if ($shequ_type == "0" || $shequ_type == 0) {
+            if ($shequ_paytype == 1 || $shequ_paytype == "1") {
+                $shequ_type = "2";
             }
         }
         if ($is_curl != "2") {
