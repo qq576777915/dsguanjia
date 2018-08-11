@@ -134,6 +134,136 @@ function king_Crawler($post, $url1, $url2)
 
 switch ($act) {
 
+    case 'db_return':
+        //代刷管家 - 还原
+        $code = 0;
+        $_sql = file_get_contents("guanjia_db.sql");
+        $_arr = explode(';', $_sql);
+        $_mysqli = new mysqli($dbconfig['host'], $dbconfig['user'], $dbconfig['pwd'], $dbconfig['dbname']);//第一个参数为域名，第二个为用户名，第三个为密码，第四个为数据库名字
+        if (mysqli_connect_errno()) {
+            exit('连接数据库出错');
+        } else {
+            //执行sql语句
+            $_mysqli->query('set names utf8;');
+            foreach ($_arr as $_value) {
+                $_mysqli->query($_value . ';');
+            }
+            $code = 1;
+            $msg = "设置成功";
+        }
+        $_mysqli->close();
+        $_mysqli = null;
+
+        $result = array("code" => $code, "msg" => $msg);
+        exit(json_encode($result));
+        break;
+
+    case 'db_backup':
+        //代刷管家 - 备份当前数据
+        $code = 0;
+        $showtime = date("Y-m-d H:i:s");
+
+        //配置信息
+        $cfg_dbhost = $dbconfig['host'];
+        $cfg_dbname = $dbconfig['dbname'];
+        $cfg_dbuser = $dbconfig['user'];
+        $cfg_dbpwd = $dbconfig['pwd'];
+        $cfg_db_language = 'utf8';
+        $to_file_name = "guanjia_db.sql";
+        // END 配置
+        //链接数据库
+        $link = mysql_connect($cfg_dbhost, $cfg_dbuser, $cfg_dbpwd);
+        mysql_select_db($cfg_dbname);
+        //选择编码
+        mysql_query("set names " . $cfg_db_language);
+        //数据库中有哪些表
+        $tables = mysql_list_tables($cfg_dbname);
+        //将这些表记录到一个数组
+        $tabList = array();
+        while ($row = mysql_fetch_row($tables)) {
+            $tabList[] = $row[0];
+        }
+
+        $fp = fopen($to_file_name, "w+");
+        fputs($fp, "");
+        fclose($fp);
+        $info = "-- ----------------------------\r\n";
+        $info .= "-- 日期：" . date("Y-m-d H:i:s", time()) . "\r\n";
+        $info .= "-- DsProtect DB BackUp 代刷管家数据备份\r\n";
+        $info .= "-- ----------------------------\r\n\r\n";
+        file_put_contents($to_file_name, $info, FILE_APPEND);
+        foreach ($tabList as $val) {
+            if ($val != "shua_tools") {
+                continue;
+            }
+            $sql = "show create table " . $val;
+            $res = mysql_query($sql, $link);
+            $row = mysql_fetch_array($res);
+            $info = "-- ----------------------------\r\n";
+            $info .= "-- Table structure for `" . $val . "`\r\n";
+            $info .= "-- ----------------------------\r\n";
+            $info .= "DROP TABLE IF EXISTS `" . $val . "`;\r\n";
+            $sqlStr = $info . $row[1] . ";\r\n\r\n";
+            //追加到文件
+            file_put_contents($to_file_name, $sqlStr, FILE_APPEND);
+            //释放资源
+            mysql_free_result($res);
+        }
+        foreach ($tabList as $val) {
+            if ($val != "shua_tools") {
+                continue;
+            }
+            $sql = "select * from " . $val;
+            $res = mysql_query($sql, $link);
+            if (mysql_num_rows($res) < 1) continue;
+            //
+            $info = "-- ----------------------------\r\n";
+            $info .= "-- Records for `" . $val . "`\r\n";
+            $info .= "-- ----------------------------\r\n";
+            file_put_contents($to_file_name, $info, FILE_APPEND);
+            while ($row = mysql_fetch_row($res)) {
+                $sqlStr = "INSERT INTO `" . $val . "` VALUES (";
+                foreach ($row as $zd) {
+                    $sqlStr .= "'" . $zd . "', ";
+                }
+                $sqlStr = substr($sqlStr, 0, strlen($sqlStr) - 2);
+                $sqlStr .= ");\r\n";
+                file_put_contents($to_file_name, $sqlStr, FILE_APPEND);
+            }
+            mysql_free_result($res);
+            file_put_contents($to_file_name, "\r\n", FILE_APPEND);
+        }
+
+        $sql = "UPDATE `shua_guanjia_config` SET `v` = '" . $showtime . "' WHERE `shua_guanjia_config`.`k` = 'dbBackUpTime';";
+        if ($DB->query($sql)) {
+            $code = 1;
+            $msg = "设置成功";
+        } else {
+            $code = 0;
+            $msg = "时间设置失败";
+        }
+
+        $result = array("code" => $code, "msg" => $msg);
+        exit(json_encode($result));
+        break;
+
+    case 'change_atuo_sjx':
+        //代刷管家 - 自动上下架
+        $code = 0;
+        $lock = $_GET['lock'];
+        $sql = "UPDATE `shua_guanjia_config` SET `v` = '" . $lock . "' WHERE `shua_guanjia_config`.`k` = 'isAutoGrounding';";
+        if ($DB->query($sql)) {
+            $code = 1;
+            $msg = "设置成功";
+        } else {
+            $code = 0;
+            $msg = "时间设置失败";
+        }
+
+        $result = array("code" => $code, "msg" => $msg);
+        exit(json_encode($result));
+        break;
+
     case 'setguantime':
         //代刷管家 - 设置最后监控时间
         $code = 0;
@@ -379,6 +509,8 @@ switch ($act) {
             exit(json_encode($result));
             break;
         }
+
+
         //收集所有商品柜价 0=客户购价 1=普及购价 2=专业购价
         $data_1[3][1];
         //收集所有shua_guanjia 0=客户购价 1=普及购价 2=专业购价 3=状态
@@ -389,6 +521,13 @@ switch ($act) {
         $data_4[5][1];
         //收集上个商品信息 0=社区ID 1=商品ID 2=商品数量 3=成本_用户 4=成本_普及 5=成本_专业
         $data_5[4][1];
+        //自动上下架  1=是 2=否
+        $auto_sjx;
+
+        $rs = $DB->query("SELECT * FROM `shua_guanjia_config` AS a WHERE k = 'isAutoGrounding'");
+        while ($res = $DB->fetch($rs)) {
+            $auto_sjx = $res['v'];
+        }
 
         $rs = $DB->query("SELECT * FROM shua_tools WHERE tid =" . $tid);
         while ($res = $DB->fetch($rs)) {
@@ -721,9 +860,11 @@ switch ($act) {
                     if ($DB->query($sql)) {
                         $code = 1;
                         $msg = "设置成功";
-                        //商品价格正常设置 恢复上架
-                        $sql = "UPDATE `shua_tools` SET `active` = '1' WHERE `shua_tools`.`tid` = " . $tid . ";";
-                        $DB->query($sql);
+                        if ($auto_sjx == 1 || $auto_sjx == "1") {
+                            //商品价格正常设置 恢复上架
+                            $sql = "UPDATE `shua_tools` SET `active` = '1' WHERE `shua_tools`.`tid` = " . $tid . ";";
+                            $DB->query($sql);
+                        }
                     } else {
                         $code = 0;
                         $msg = "设置失败，错误代码-eo1";
@@ -733,9 +874,11 @@ switch ($act) {
                     $msg = "设置成功";
                 }
             } else {
-                //如果商品维护 / 不存在 自动下架该商品
-                $sql = "UPDATE `shua_tools` SET `active` = '0' WHERE `shua_tools`.`tid` = " . $tid . ";";
-                $DB->query($sql);
+                if ($auto_sjx == 1 || $auto_sjx == "1") {
+                    //如果商品维护 / 不存在 自动下架该商品
+                    $sql = "UPDATE `shua_tools` SET `active` = '0' WHERE `shua_tools`.`tid` = " . $tid . ";";
+                    $DB->query($sql);
+                }
                 $code = 1;
                 $msg = "设置成功，商品维护";
             }
@@ -747,7 +890,8 @@ switch ($act) {
         exit(json_encode($result));
         break;
 
-    case 'setguanjia':
+    case
+    'setguanjia':
         //代刷管家 - 变量用户设置
         $code = 0;
         $tid = intval($_GET['tid']);

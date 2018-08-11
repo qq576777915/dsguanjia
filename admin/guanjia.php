@@ -38,6 +38,34 @@ $mh = $_GET['mh'];
 $count_tools = $DB->count("SELECT MAX(tid) from shua_tools");
 $count_guanjia = $DB->count("SELECT MAX(tid) from shua_guanjia");
 
+
+$sql = 'SELECT * FROM shua_guanjia_config';
+if ($DB->query($sql)) {
+
+} else {
+    $sql = "CREATE TABLE `shua_guanjia_config` (
+  `k` varchar(32) NOT NULL,
+  `v` text
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+    if ($DB->query($sql)) {
+        $sql = "ALTER TABLE `shua_guanjia_config`
+  ADD PRIMARY KEY (`k`);";
+        if ($DB->query($sql)){
+            $sql = "INSERT INTO `shua_guanjia_config` (`k`, `v`) VALUES
+('isAutoGrounding', '0'),
+('dbBackUpTime', '2018-04-10 00:00:00');";
+            if ($DB->query($sql)){
+                $guanjia_new = $guanjia_new . "检测到v2.1新安装用户，成功新建shua_guanjia_config表，请刷新<br>";
+            } else {
+                exit("shua_guanjia_config新建失败，data:-oj7");
+            }
+        } else {
+            exit("shua_guanjia_config新建失败，data:-oj8");
+        }
+    } else {
+        exit("shua_guanjia_config新建失败，data:-oj9");
+    }
+}
 //    检测有无shua_guanjia表
 $sql = "SELECT * FROM shua_guanjia";
 if ($DB->query($sql)) {
@@ -76,12 +104,12 @@ if ($DB->query($sql)) {
                     }
                     $sql = $sql . ";";
                     if ($DB->query($sql)) {
-                        $guanjia_new = "检测有新增商品，已成功更新，请重新访问当前页面<br>";
+                        $guanjia_new = $guanjia_new . "检测有新增商品，已成功更新，请重新访问当前页面<br>";
                     } else {
-                        $guanjia_new = "检测有新增商品，更新失败，错误代码-g01<br>";
+                        $guanjia_new = $guanjia_new . "检测有新增商品，更新失败，错误代码-g01<br>";
                     }
                 } else {
-                    $guanjia_new = "检测有新增商品，更新失败，错误代码-g00<br>";
+                    $guanjia_new = $guanjia_new . "检测有新增商品，更新失败，错误代码-g00<br>";
                 }
                 echo exit($guanjia_new);
             }
