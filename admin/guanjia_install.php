@@ -1,6 +1,7 @@
 <?php
 @header('Content-Type: text/html; charset=UTF-8');
-$ver = "2.0"; //版本号
+$ver = "2.1"; //版本号
+$sign = "021"; //路径号
 
 //远程下载文件
 function getFile($url, $save_dir = '', $filename = '', $type = 0)
@@ -52,10 +53,16 @@ if ($cron_key == 1) {
     if (!getFile("http://cdn.dkfirst.cn/guanjia_key.php", '', 'guanjia_key.php', 1)) {
         exit("guanjia_key.php:no");
     }
-    if (!getFile("http://cdn.dkfirst.cn/guanjia_ajax.php", '', '../guanjia_ajax.php', 1)) {
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_ajax.php", '', '../guanjia_ajax.php', 1)) {
         exit("guanjia_ajax.php:no");
     }
-    if (!getFile("http://cdn.dkfirst.cn/head.php", '', 'head.php', 1)) {
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/head.php", '', 'head.php', 1)) {
+        exit("guanjia_head.php:no");
+    }
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_db.php", '', 'guanjia_db.php', 1)) {
+        exit("guanjia_head.php:no");
+    }
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_setting.php", '', 'guanjia_setting.php', 1)) {
         exit("guanjia_head.php:no");
     }
     exit("ok");

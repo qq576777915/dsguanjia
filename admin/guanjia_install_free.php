@@ -1,6 +1,6 @@
 <?php
 @header('Content-Type: text/html; charset=UTF-8');
-$ver = "2.0"; //版本号
+$ver = "2.1"; //版本号
 
 //远程下载文件
 function getFile($url, $save_dir = '', $filename = '', $type = 0)

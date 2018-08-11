@@ -13,7 +13,8 @@ header("Content-Type: text/html; charset=UTF-8");
 include("../includes/common.php");
 include("../admin/guanjia_key.php");
 
-$ver = "2.0";
+
+$ver = "2.1";
 
 
 $title = '代刷管家';
@@ -24,6 +25,34 @@ $mh = $_GET['mh'];
 $count_tools = $DB->count("SELECT MAX(tid) from shua_tools");
 $count_guanjia = $DB->count("SELECT MAX(tid) from shua_guanjia");
 
+
+$sql = 'SELECT * FROM shua_guanjia_config';
+if ($DB->query($sql)) {
+
+} else {
+    $sql = "CREATE TABLE `shua_guanjia_config` (
+  `k` varchar(32) NOT NULL,
+  `v` text
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+    if ($DB->query($sql)) {
+        $sql = "ALTER TABLE `shua_guanjia_config`
+  ADD PRIMARY KEY (`k`);";
+        if ($DB->query($sql)){
+            $sql = "INSERT INTO `shua_guanjia_config` (`k`, `v`) VALUES
+('isAutoGrounding', '0'),
+('dbBackUpTime', '2018-04-10 00:00:00');";
+            if ($DB->query($sql)){
+                $guanjia_new = $guanjia_new . "检测到v2.1新安装用户，成功新建shua_guanjia_config表，请刷新<br>";
+            } else {
+                exit("shua_guanjia_config新建失败，data:-oj7");
+            }
+        } else {
+            exit("shua_guanjia_config新建失败，data:-oj8");
+        }
+    } else {
+        exit("shua_guanjia_config新建失败，data:-oj9");
+    }
+}
 //    检测有无shua_guanjia表
 $sql = "SELECT * FROM shua_guanjia";
 if ($DB->query($sql)) {
@@ -62,12 +91,12 @@ if ($DB->query($sql)) {
                     }
                     $sql = $sql . ";";
                     if ($DB->query($sql)) {
-                        $guanjia_new = "检测有新增商品，已成功更新，请重新访问当前页面<br>";
+                        $guanjia_new = $guanjia_new . "检测有新增商品，已成功更新，请重新访问当前页面<br>";
                     } else {
-                        $guanjia_new = "检测有新增商品，更新失败，错误代码-g01<br>";
+                        $guanjia_new = $guanjia_new . "检测有新增商品，更新失败，错误代码-g01<br>";
                     }
                 } else {
-                    $guanjia_new = "检测有新增商品，更新失败，错误代码-g00<br>";
+                    $guanjia_new = $guanjia_new . "检测有新增商品，更新失败，错误代码-g00<br>";
                 }
                 echo exit($guanjia_new);
             }
@@ -124,9 +153,9 @@ setTimeout(window.location.href='./guanjia.php',3000);
     }
     if ($mh == '1' || $mh == 1) {
         exit("<script src=\"//lib.baomitu.com/jquery/1.12.4/jquery.min.js\"></script>
-<a>第</a><span id='load_1'>0</span><a>个/总" . $count_tools . "个，进行中【价格美化版】....</a><br>
+<a>第</a><span id='load_1'>0</span><a>个/总" . $count_tools . "个，进行中【价格美化版】<img id=\"loading_img\" style=\"width:20px;\" src=\"http://cdn.dkfirst.cn/loading-2.gif\">&nbsp;<button id=\"again_bt1\" onclick=\"setguani()\" class=\"btn btn-info btn-sm\" style=\"display: none;\">重试当前商品</button></a><br>
 <span id=\"load_2\" style=\"color:goldenrod\">如果卡着不动了，请刷新并请检查相应社区是否可以正常打开</span><br><br><span style=\"color:darkblue\">代刷管家 - 在线版 Ver:" . $ver . "</span><br>
-<span style=\"color:darkblue\">作者:<a href=\"\">KING</a> &nbsp;&nbsp; 数据赞助：<a href=\"\">小学生</a></span><br>
+<span style=\"color:darkblue\">作者:<a href=\"\">KING</a> &nbsp;&nbsp; 服务引擎支持：<a href=\"http://www.idcyun.wang\"><img src=\"http://gj.dkfirst.cn/images/jmyidc.png\" style=\"width: 70px;\"></a></span><br>
 <script>
     // var i = 1;
     // setInterval(function () {
@@ -139,6 +168,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
     function setguantime() {
       $.ajax({
             type: \"GET\",
+            timeout: 15000,
             url: \"../guanjia_ajax.php?act=setguantime&star=true\",
             dataType: 'json',
             success: function (data) {
@@ -165,6 +195,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
     function setguani() {
         $.ajax({
             type: \"GET\",
+            timeout: 15000,
             url: \"../guanjia_ajax.php?act=setguani&mh=1&tid=\" + sign,
             dataType: 'json',
             success: function (data) {
@@ -184,7 +215,8 @@ setTimeout(window.location.href='./guanjia.php',3000);
             },
             error: function (data) {
                 if (setguani_sign > 3){
-                alert('服务器错误');
+                    alert('服务器错误，请稍等1-3分钟点击重试按钮');
+                    $(\"#again_bt1\").css(\"display\",\"\");
                 return false;
                 } else {
                     setguani_sign++;
@@ -200,9 +232,10 @@ setTimeout(window.location.href='./guanjia.php',3000);
 
     // 美化监控结束
     exit("<script src=\"//lib.baomitu.com/jquery/1.12.4/jquery.min.js\"></script>
-<a>第</a><span id='load_1'>0</span><a>个/总" . $count_tools . "个，进行中....</a><br>
+<a>第</a><span id='load_1'>0</span><a>个/总" . $count_tools . "个，进行中<img id=\"loading_img\" style=\"width:20px;\" src=\"http://cdn.dkfirst.cn/loading-2.gif\">&nbsp;<button id=\"again_bt1\" onclick=\"setguani()\" class=\"btn btn-info btn-sm\" style=\"display: none;\">重试当前商品
+                            </button></a><br>
 <span id=\"load_2\" style=\"color:goldenrod\">如果卡着不动了，请刷新并请检查相应社区是否可以正常打开</span><br><br><span style=\"color:darkblue\">代刷管家 - 在线版 Ver:" . $ver . "</span><br>
-<span style=\"color:darkblue\">作者:<a href=\"\">KING</a> &nbsp;&nbsp; 数据赞助：<a href=\"\">小学生</a></span><br>
+<span style=\"color:darkblue\">作者:<a href=\"\">KING</a> &nbsp;&nbsp; 服务引擎支持：<a href=\"http://www.idcyun.wang\"><img src=\"http://gj.dkfirst.cn/images/jmyidc.png\" style=\"width: 70px;\"></a></span><br>
 <script>
     // var i = 1;
     // setInterval(function () {
@@ -215,6 +248,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
     function setguantime() {
       $.ajax({
             type: \"GET\",
+            timeout: 15000,
             url: \"../guanjia_ajax.php?act=setguantime&star=true\",
             dataType: 'json',
             success: function (data) {
@@ -227,7 +261,8 @@ setTimeout(window.location.href='./guanjia.php',3000);
             },
             error: function (data) {
                 if (setguantime_sign > 3){
-                alert('服务器错误'); 
+                    alert('服务器错误，请稍等1-3分钟点击重试按钮');
+                    $(\"#again_bt1\").css(\"display\", \"\");
                 return false;
                 } else {
                     setguantime_sign++;
@@ -241,6 +276,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
     function setguani() {
         $.ajax({
             type: \"GET\",
+            timeout: 15000,
             url: \"../guanjia_ajax.php?act=setguani&tid=\" + sign,
             dataType: 'json',
             success: function (data) {
@@ -334,28 +370,28 @@ $select2 = '<option value="0">请选择商品</option>';
                         <tr height="25">
                             <td class="col-xs-4 col-sm-4" align="center"> 成本价格为：</td>
                             <td class="col-xs-8 col-sm-8" align="center"> <span
-                                    id="now_cb">0.04</span></td>
+                                        id="now_cb">0.04</span></td>
                         </tr>
                         <tr height="25">
                             <td class="col-xs-4 col-sm-4" align="center"> 专业价格：</td>
                             <td class="col-xs-8 col-sm-8" align="center"> <span
-                                    id="price_zy">0.1</span>
+                                        id="price_zy">0.1</span>
                             </td>
                         </tr>
                         <tr height="25">
                             <td class="col-xs-4 col-sm-4" align="center"> 普及价格：</td>
                             <td class="col-xs-8 col-sm-8" align="center"> <span
-                                    id="price_pj">0.2</span></td>
+                                        id="price_pj">0.2</span></td>
                         </tr>
                         <tr height="25">
                             <td class="col-xs-4 col-sm-4" align="center"> 用户价格：</td>
                             <td class="col-xs-8 col-sm-8" align="center"> <span
-                                    id="price_yh">0.5</span></td>
+                                        id="price_yh">0.5</span></td>
                         </tr>
                         <tr height="25">
                             <td class="col-xs-4 col-sm-4" align="center"> 来自社区：</td>
                             <td class="col-xs-8 col-sm-8" align="center"> <span
-                                    id="now_shequ">****</span></td>
+                                        id="now_shequ">****</span></td>
                         </tr>
                         </tbody>
                     </table>
@@ -432,7 +468,13 @@ $select2 = '<option value="0">请选择商品</option>';
                     </div>
                     <div class="form-group">
                         <center id="pl_load_1" style="display: none">正在设置中<span
-                                id="pl_load">1</span>/<?php echo $count_tools ?></center>
+                                    id="pl_load">1</span>/<?php echo $count_tools ?><img id="loading_img"
+                                                                                         style="width:20px;"
+                                                                                         src="http://cdn.dkfirst.cn/loading-2.gif">&nbsp;<button
+                                    id="again_bt1" onclick="setguanjia_pl()" class="btn btn-info btn-sm"
+                                    style="display: none;">重试当前商品
+                            </button>
+                        </center>
                     </div>
                     <div class="form-group">
                         <input type="submit" id="bt_submit_pi" name="submit" value="保存"
@@ -479,7 +521,7 @@ $select2 = '<option value="0">请选择商品</option>';
                     </div>
                     <div class="form-group">
                         <center id="pl_load_1_fl" style="display: none">正在设置中<span
-                                id="pl_load_fl">1</span>/<span id="pl_load_f2">MAX</span></center>
+                                    id="pl_load_fl">1</span>/<span id="pl_load_f2">MAX</span></center>
                     </div>
                     <div class="form-group">
                         <input type="submit" id="bt_submit_pi_fl" name="submit" value="保存"
@@ -490,9 +532,9 @@ $select2 = '<option value="0">请选择商品</option>';
         </div>
         <center>
             代刷管家 - 在线版&nbsp;&nbsp;&nbsp;作者：<a
-                href="http://wpa.qq.com/msgrd?v=3&amp;uin=1776885812&amp;site=qq&amp;menu=yes">KING</a><br>
+                    href="http://wpa.qq.com/msgrd?v=3&amp;uin=1776885812&amp;site=qq&amp;menu=yes">KING</a><br>
             本程序由<a href="http://www.idcyun.wang"><img src="http://gj.dkfirst.cn/images/jmyidc.png" style="width: 70px;"></a>提供服务引擎
-            当前版本：<?php echo $ver ?> - Free 历史版本：<a target="_blank" href="http://zeink.cn/?p=255">【点击查看】</a>
+            当前版本：<?php echo $ver ?> 历史版本：<a target="_blank" href="http://zeink.cn/?p=255">【点击查看】</a>
         </center>
     </div>
 </div>
@@ -520,7 +562,7 @@ $select2 = '<option value="0">请选择商品</option>';
         // }
         // $.ajax({
         //     type: "GET",
-        //     url: "../ajax.php?act=setguani_pl_fl_count&multi=" + multi_text,
+        //     url: "../guanjia_ajax.php?act=setguani_pl_fl_count&multi=" + multi_text,
         //     dataType: 'json',
         //     success: function (data) {
         //         if (data.code == 1) {
@@ -581,7 +623,9 @@ $select2 = '<option value="0">请选择商品</option>';
     var setguanjia_pl_sign = 1;
 
     function setguanjia_pl() {
-        swal("暂无权限！", "此功能为高级版特属，请支持作者购买原正版程序，给ta一份更新的动力:)(如果您已经授权了，请在授权页下载授权版程序安装)","error");
+        swal("暂无权限！", "此功能为高级版特属，请支持作者购买原正版程序，给ta一份更新的动力:) 如果您已经购买授权，请在授权页下载授权版程序使用","error");
+
+        //$("#again_bt1").css("display", "none");
         //var yh_pi = $("#input_yh_pi").val();
         //var pj_pi = $("#input_pj_pi").val();
         //var zy_pi = $("#input_zy_pi").val();
@@ -595,16 +639,19 @@ $select2 = '<option value="0">请选择商品</option>';
         //zy_pi = zy_pi * 100;
         //$.ajax({
         //    type: "GET",
+        //    timeout: 15000,
         //    url: "../guanjia_ajax.php?act=setguani_pl&tid=" + sign_1 + "&yh_pi=" + yh_pi + "&pj_pi=" + pj_pi + "&zy_pi=" + zy_pi,
         //    dataType: 'json',
         //    success: function (data) {
         //        if (data.code == 1) {
         //            sign_1++;
         //            if (sign_1 > <?php //echo $count_tools?>//) {
+        //                $("#loading_img").css("display", "none");
         //                $("#pl_load_1").html("<?php //echo $count_tools?>//个商品已全部设置好管家值，下次监控将生效");
         //                $("#pl_load_1").css("color", "forestgreen");
         //                return false;
         //            }
+        //            setguanjia_pl_sign = 1;
         //            $("#pl_load").text(sign_1);
         //            setguanjia_pl();
         //        } else {
@@ -613,7 +660,8 @@ $select2 = '<option value="0">请选择商品</option>';
         //    },
         //    error: function (data) {
         //        if (setguanjia_pl_sign > 3) {
-        //            alert('服务器错误');
+        //            alert('服务器错误，请稍等1-3分钟点击重试按钮');
+        //            $("#again_bt1").css("display", "");
         //            return false;
         //        } else {
         //            setguanjia_pl();

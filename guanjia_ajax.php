@@ -193,7 +193,7 @@ switch ($act) {
         $info .= "-- ----------------------------\r\n\r\n";
         file_put_contents($to_file_name, $info, FILE_APPEND);
         foreach ($tabList as $val) {
-            if ($val != "shua_tools") {
+            if ($val != $dbconfig['dbqz'] . "_tools") {
                 continue;
             }
             $sql = "show create table " . $val;
@@ -210,7 +210,7 @@ switch ($act) {
             mysql_free_result($res);
         }
         foreach ($tabList as $val) {
-            if ($val != "shua_tools") {
+            if ($val != $dbconfig['dbqz'] . "_tools") {
                 continue;
             }
             $sql = "select * from " . $val;
@@ -710,6 +710,15 @@ switch ($act) {
         $data_4[5][1];
         //收集上个商品信息 0=社区ID 1=商品ID 2=商品数量 3=成本_用户 4=成本_普及 5=成本_专业
         $data_5[4][1];
+        //自动上下架  1=是 2=否
+        $auto_sjx;
+        //检测商品是否维护
+        $yile_lock = 0;
+
+        $rs = $DB->query("SELECT * FROM `shua_guanjia_config` AS a WHERE k = 'isAutoGrounding'");
+        while ($res = $DB->fetch($rs)) {
+            $auto_sjx = $res['v'];
+        }
         $rs = $DB->query("SELECT * FROM shua_tools WHERE tid =" . $tid);
         while ($res = $DB->fetch($rs)) {
             $data_1[0][0] = $res['price'];
@@ -806,6 +815,8 @@ switch ($act) {
                     $result = king_Crawler_1($url1, $url2, "", $post, $yile_cookie);
                 }
 
+                $yile_lock = stripos($result, "禁止下单");
+
                 $re1 = '/Number\(\"([0-9]+\.\S+)\"/';
                 $float1 = king_Regular($result, $re1);
                 $data_3[3][0] = $float1 * $data_3[2][0];
@@ -861,9 +872,14 @@ switch ($act) {
                         $code = 1;
                         $msg = "设置成功";
                         if ($auto_sjx == 1 || $auto_sjx == "1") {
-                            //商品价格正常设置 恢复上架
-                            $sql = "UPDATE `shua_tools` SET `active` = '1' WHERE `shua_tools`.`tid` = " . $tid . ";";
-                            $DB->query($sql);
+                            if ($yile_lock > 1) {
+                                //搜查到有“禁止下单”字样，在维护，下架
+                                $sql = "UPDATE `shua_tools` SET `active` = '0' WHERE `shua_tools`.`tid` = " . $tid . ";";
+                            } else {
+                                //商品价格正常设置 恢复上架
+                                $sql = "UPDATE `shua_tools` SET `active` = '1' WHERE `shua_tools`.`tid` = " . $tid . ";";
+                                $DB->query($sql);
+                            }
                         }
                     } else {
                         $code = 0;

@@ -27,7 +27,7 @@ if ($_GET['q']) {
     file_put_contents("download.php", file_get_contents("http://gj.dkfirst.cn/download.txt"));
 }
 
-$ver = "2.0";
+$ver = "2.1";
 
 
 $title = '代刷管家';
@@ -216,6 +216,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
                     $(\"#load_1\").text(sign++);
                     if (sign > " . $count_tools . ") {
                         setguantime();
+                        $(\"#loading_img\").css(\"display\", \"none\");
                         $(\"#load_2\").text(\"已完成所有商品的设置\");
                         $(\"#load_2\").css(\"color\",\"forestgreen\");
                         return false;
@@ -297,6 +298,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
                     $(\"#load_1\").text(sign++);
                     if (sign > " . $count_tools . ") {
                         setguantime();
+                        $(\"#loading_img\").css(\"display\", \"none\");
                         $(\"#load_2\").text(\"已完成所有商品的设置\");
                         $(\"#load_2\").css(\"color\",\"forestgreen\");
                         return false;
@@ -575,7 +577,7 @@ $select2 = '<option value="0">请选择商品</option>';
         // }
         // $.ajax({
         //     type: "GET",
-        //     url: "../ajax.php?act=setguani_pl_fl_count&multi=" + multi_text,
+        //     url: "../guanjia_ajax.php?act=setguani_pl_fl_count&multi=" + multi_text,
         //     dataType: 'json',
         //     success: function (data) {
         //         if (data.code == 1) {
