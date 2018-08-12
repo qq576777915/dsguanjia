@@ -1,7 +1,6 @@
 <?php
 @header('Content-Type: text/html; charset=UTF-8');
-$ver = "2.1"; //版本号
-
+$sign = "0215"; //路径号
 //远程下载文件
 function getFile($url, $save_dir = '', $filename = '', $type = 0)
 {
@@ -44,25 +43,29 @@ function getFile($url, $save_dir = '', $filename = '', $type = 0)
 }
 
 $cron_key = $_GET['key'];
-
 if ($cron_key == 1) {
-    if (!getFile("http://cdn.dkfirst.cn/guanjia_v" . $ver . "_free.php", '', 'guanjia.php', 1)) {
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_free.php", '', 'guanjia.php', 1)) {
         exit("guanjia.php:no");
     }
     if (!getFile("http://cdn.dkfirst.cn/guanjia_key.php", '', 'guanjia_key.php', 1)) {
         exit("guanjia_key.php:no");
     }
-    if (!getFile("http://cdn.dkfirst.cn/guanjia_ajax.php", '', '../guanjia_ajax.php', 1)) {
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_ajax.php", '', '../guanjia_ajax.php', 1)) {
         exit("guanjia_ajax.php:no");
     }
-    if (!getFile("http://cdn.dkfirst.cn/head.php", '', 'head.php', 1)) {
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/head.php", '', 'head.php', 1)) {
         exit("guanjia_head.php:no");
+    }
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_db.php", '', 'guanjia_db.php', 1)) {
+        exit("guanjia_db.php:no");
+    }
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_setting.php", '', 'guanjia_setting.php', 1)) {
+        exit("guanjia_setting.php:no");
     }
     exit("ok");
 } else {
     exit ("<!DOCTYPE html>
 <html lang=\"en\" class=\"no-js\">
-
 <head>
     <meta charset=\"UTF-8\"/>
     <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">
@@ -73,16 +76,13 @@ if ($cron_key == 1) {
     <link rel=\"stylesheet\" type=\"text/css\" href=\"http://cdn.dkfirst.cn/dsprotect/css/demo.css\"/>
     <link rel=\"stylesheet\" type=\"text/css\" href=\"http://cdn.dkfirst.cn/dsprotect/css/component.css\"/>
     <link rel=\"stylesheet\" type=\"text/css\" href=\"http://cdn.dkfirst.cn/dsprotect/css/custom-bars.css\"/>
-
 </head>
-
 <body style=\"background: #D8DBE4\">
 <div class=\"container\">
     <section class=\"content\">
         <!-- <h2>h2</h2> -->
-
         <article class=\"flexy-grid\">
-            <h1>代刷管家VIP版 V2.0</h1>
+            <h1>代刷管家Free版 V2.15</h1>
             <h2 id=\"h2_1\">正在安装.....</h2>
             <input type=\"checkbox\" id=\"bar-2\">
             <div class=\"flexy-column\">
@@ -101,7 +101,6 @@ if ($cron_key == 1) {
                     </div>
                 </div>
             </div>
-
             <!--<label class=\"value-label\" for=\"bar-2\">[ aria-valuenow = '90%' ]</label>-->
             <label id=\"h3_1\" style=\"display: none;margin-top: -20px;\" class=\"value-label\"><a href='./guanjia.php'>点击进入</label>
         </article>
@@ -121,58 +120,47 @@ if ($cron_key == 1) {
     // $(\"#change-color .bar\").click(function(){
     //     $(this).toggleClass('sleep');
     // });
-    var num = 5;
+   var num = 5;
     var lock = 0;
     var a = setInterval(function () {
-        num += 10;
-        if (num == 55 && lock < 2){
-            num -= 10;
-            lock++;
-        }
-        if (num > 100){
+        num += 5;
+
+        if (num == 35) {
             $.ajax({
                 type: \"get\",
                 url: \"./guanjia_install.php?key=1\",
                 dataType: \"text\",
                 success: function (data) {
-                    if (data == \"ok\"){
-                        $(\"#move_label\").attr(\"aria-valuenow\", \"100\");
-                        $(\"#move_label\").removeClass(\"move\");
-                        $(\"#move_label\").addClass(\"move1\");
-                        $(\"#h2_1\").html(\"<font color='green'>安装完成</font>\")
-                        $(\"#h3_1\").css(\"display\",\"\");
+                    if (data == \"ok\") {
                     } else {
-                        alert(\"安装失败，\"+data);
+                        alert(\"安装失败，\" + data);
                         $(\"#h2_1\").html(\"<font color='red'>安装失败</font>\")
                     }
-                    clearInterval(a);
+
                 },
                 error: function (data) {
-                    if (data == \"ok\"){
-                        $(\"#move_label\").attr(\"aria-valuenow\", \"100\");
-                        $(\"#move_label\").removeClass(\"move\");
-                        $(\"#move_label\").addClass(\"move1\");
-                        $(\"#h2_1\").html(\"<font color='green'>安装完成</font>\")
-                        $(\"#h3_1\").css(\"display\",\"\");
-                        clearInteval(a);
+                    if (data == \"ok\") {
                     } else {
-                        alert(\"安装失败，\"+data);
-                        $(\"#h2_1\").html(\"<font color='red'>安装失败</font>\")
+                        alert(\"安装失败，\" + data);
+                        $(\"#h2_1\").html(\"<font color='red'>安装失败</font>\");
                     }
-                    clearInterval(a);
                 }
             });
+        }
+
+        $(\"#move_label\").attr(\"aria-valuenow\", num + \"\");
+        if (num > 100) {
+            $(\"#move_label\").removeClass(\"move\");
+            $(\"#move_label\").addClass(\"move1\");
+            $(\"#h3_1\").css(\"display\", \"\");
+            $(\"#h2_1\").html(\"<font color='green'>安装完成</font>\")
+            $(\"#move_label\").attr(\"aria-valuenow\", 100);
             clearInterval(a);
         }
-        $(\"#move_label\").attr(\"aria-valuenow\", num + \"\");
     },400)
-
 </script>
 </body>
-
 </html>
 ");
 }
-
-
 ?>

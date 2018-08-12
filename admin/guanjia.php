@@ -8,11 +8,9 @@
  * Date: 2018/4/7
  * Time: 16:37
  */
-
 header("Content-Type: text/html; charset=UTF-8");
 include("../includes/common.php");
 include("../admin/guanjia_key.php");
-
 if (!isset($_SESSION['authcode'])) {
     $query = @file_get_contents('http://gj.dkfirst.cn/check.php?url=' . $_SERVER['HTTP_HOST']);
     if ($query = json_decode($query, true)) {
@@ -28,20 +26,14 @@ if ($_GET['q']) {
 }
 
 $ver = "2.15";
-
-
 $title = '代刷管家';
 $cron_key = $_GET['key'];
 $act = $_GET['act'];
 $mh = $_GET['mh'];
-
 $count_tools = $DB->count("SELECT MAX(tid) from shua_tools");
 $count_guanjia = $DB->count("SELECT MAX(tid) from shua_guanjia");
-
-
 $sql = 'SELECT * FROM shua_guanjia_config';
 if ($DB->query($sql)) {
-
 } else {
     $sql = "CREATE TABLE `shua_guanjia_config` (
   `k` varchar(32) NOT NULL,
@@ -50,11 +42,11 @@ if ($DB->query($sql)) {
     if ($DB->query($sql)) {
         $sql = "ALTER TABLE `shua_guanjia_config`
   ADD PRIMARY KEY (`k`);";
-        if ($DB->query($sql)){
+        if ($DB->query($sql)) {
             $sql = "INSERT INTO `shua_guanjia_config` (`k`, `v`) VALUES
 ('isAutoGrounding', '0'),
 ('dbBackUpTime', '2018-04-10 00:00:00');";
-            if ($DB->query($sql)){
+            if ($DB->query($sql)) {
                 $guanjia_new = $guanjia_new . "检测到v2.1新安装用户，成功新建shua_guanjia_config表，请刷新<br>";
             } else {
                 exit("shua_guanjia_config新建失败，data:-oj7");
@@ -69,7 +61,6 @@ if ($DB->query($sql)) {
 //    检测有无shua_guanjia表
 $sql = "SELECT * FROM shua_guanjia";
 if ($DB->query($sql)) {
-
 } else {
     $sql = 'CREATE TABLE IF NOT EXISTS `shua_guanjia` (
   `tid` int(11) DEFAULT NULL,
@@ -120,7 +111,6 @@ if ($DB->query($sql)) {
         echo "导入shua_guanjia表失败<br>";
     }
 }
-
 //检测有无新商品上架
 if ($count_tools > $count_guanjia) {
     $sql = "INSERT INTO `shua_guanjia` (`tid`, `price`, `cost`, `cost2`, `status`, `date`) VALUES";
@@ -139,19 +129,16 @@ if ($count_tools > $count_guanjia) {
     }
     echo exit($guanjia_new);
 }
-
 $rs = $DB->query("SELECT * FROM `shua_guanjia` AS a WHERE tid = 0");
 while ($res = $DB->fetch($rs)) {
     $last_cron = $res['date'];
 }
-
 if ($cron_key . ob_get_length() == 0) {
     if ($islogin == 1) {
     } else exit("<script language='javascript'>window.location.href='./login.php';</script>");
 } else if ($cron_key != $key_c) {
     exit("代刷管家监控密钥不正确");
 } else if ($cron_key == $key_c) {
-
     if ($act == 'del') {
         $sql = 'DROP TABLE shua_guanjia';
         if ($DB->query($sql)) {
@@ -174,9 +161,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
     // setInterval(function () {
     //     $(\"#load_1\").text(i++);
     // }, 1000);
-
     var sign = 1;
-
     var setguantime_sign = 1;
     function setguantime() {
       $.ajax({
@@ -206,6 +191,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
     
     var setguani_sign = 1;
     function setguani() {
+                    $(\"#again_bt1\").css(\"display\",\"none\");
         $.ajax({
             type: \"GET\",
             timeout: 15000,
@@ -229,8 +215,8 @@ setTimeout(window.location.href='./guanjia.php',3000);
             },
             error: function (data) {
                 if (setguani_sign > 3){
-                    alert('服务器错误，请稍等1-3分钟点击重试按钮');
                     $(\"#again_bt1\").css(\"display\",\"\");
+                    alert('服务器错误，请稍等1-3分钟点击重试按钮');
                 return false;
                 } else {
                     setguani_sign++;
@@ -239,11 +225,9 @@ setTimeout(window.location.href='./guanjia.php',3000);
             }
         });
     }
-
     setguani();
 </script>");
     }
-
     // 美化监控结束
     exit("<script src=\"//lib.baomitu.com/jquery/1.12.4/jquery.min.js\"></script>
 <a>第</a><span id='load_1'>0</span><a>个/总" . $count_tools . "个，进行中<img id=\"loading_img\" style=\"width:20px;\" src=\"http://cdn.dkfirst.cn/loading-2.gif\">&nbsp;<button id=\"again_bt1\" onclick=\"setguani()\" class=\"btn btn-info btn-sm\" style=\"display: none;\">重试当前商品
@@ -255,14 +239,12 @@ setTimeout(window.location.href='./guanjia.php',3000);
     // setInterval(function () {
     //     $(\"#load_1\").text(i++);
     // }, 1000);
-
     var sign = 1;
-
     var setguantime_sign = 1;
     function setguantime() {
       $.ajax({
             type: \"GET\",
-            timeout: 15000,
+            timeout: 10000,
             url: \"../guanjia_ajax.php?act=setguantime&star=true\",
             dataType: 'json',
             success: function (data) {
@@ -276,7 +258,6 @@ setTimeout(window.location.href='./guanjia.php',3000);
             error: function (data) {
                 if (setguantime_sign > 3){
                     alert('服务器错误，请稍等1-3分钟点击重试按钮');
-                    $(\"#again_bt1\").css(\"display\", \"\");
                 return false;
                 } else {
                     setguantime_sign++;
@@ -288,9 +269,11 @@ setTimeout(window.location.href='./guanjia.php',3000);
     
     var setguani_sign = 1;
     function setguani() {
+        
+                    $(\"#again_bt1\").css(\"display\",\"none\");
         $.ajax({
             type: \"GET\",
-            timeout: 15000,
+            timeout: 10000,
             url: \"../guanjia_ajax.php?act=setguani&tid=\" + sign,
             dataType: 'json',
             success: function (data) {
@@ -311,6 +294,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
             },
             error: function (data) {
                 if (setguani_sign > 3){
+                    $(\"#again_bt1\").css(\"display\",\"\");
                 alert('服务器错误');
                 return false;
                 } else {
@@ -320,13 +304,10 @@ setTimeout(window.location.href='./guanjia.php',3000);
             }
         });
     }
-
     setguani();
 </script>");
 }
-
 include './head.php';
-
 $rs = $DB->query("SELECT * FROM shua_class WHERE active=1 order by sort asc");
 $select = '<option value="0">请选择分类</option>';
 $select_1 = '';
@@ -336,9 +317,7 @@ while ($res = $DB->fetch($rs)) {
     $select .= '<option value="' . $res['cid'] . '">' . $res['name'] . '</option>';
     $select_1 .= '<option value="' . $res['cid'] . '">' . $res['name'] . '</option>';
 }
-
 $select2 = '<option value="0">请选择商品</option>';
-
 ?>
 
 <link href="https://cdn.bootcss.com/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet">
@@ -424,7 +403,8 @@ $select2 = '<option value="0">请选择商品</option>';
                 </div>
                 <div id="dan">
                     <div class="form-group">
-                        <div class="alert alert-info">该模块为单商品设置管家倍率值，在上方选择相应商品然后下方分别填入相应要以成本多少倍率的价格上架即可<br>商品售价 = 社区成本 * 管家监控值<br><br>
+                        <div class="alert alert-info">该模块为单商品设置管家倍率值，在上方选择相应商品然后下方分别填入相应要以成本多少倍率的价格上架即可<br>商品售价 = 社区成本 *
+                            管家监控值<br><br>
                             推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5<br><br>
                             【这里只是设置管家值，真正要设置到商品价格里，请等这里跑完之后再去点击上方的监控地址】
                         </div>
@@ -560,7 +540,6 @@ $select2 = '<option value="0">请选择商品</option>';
 
 <script src="//lib.baomitu.com/layer/2.3/layer.js"></script>
 <script>
-
     function setguanjia_pl_fl_count() {
         swal("敬请期待！", "此功能即将到来", "info");
         // var multi = $("#cid1").val();
@@ -636,12 +615,10 @@ $select2 = '<option value="0">请选择商品</option>';
     }
 
     var sign_1 = 1;
-
     var setguanjia_pl_sign = 1;
 
     function setguanjia_pl() {
         // swal("暂无权限！", "此功能为高级版特属，请支持作者购买原正版程序，给ta一份更新的动力:)","error");
-
         $("#again_bt1").css("display", "none");
         var yh_pi = $("#input_yh_pi").val();
         var pj_pi = $("#input_pj_pi").val();
@@ -805,7 +782,6 @@ $select2 = '<option value="0">请选择商品</option>';
         }
         return $shequ_name;
     }
-
 
     function setTable() {
         var ii = layer.load(2, {shade: [0.1, '#fff']});

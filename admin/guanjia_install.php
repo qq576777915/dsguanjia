@@ -1,7 +1,6 @@
 <?php
 @header('Content-Type: text/html; charset=UTF-8');
 $sign = "0215"; //路径号
-
 //远程下载文件
 function getFile($url, $save_dir = '', $filename = '', $type = 0)
 {
@@ -42,9 +41,7 @@ function getFile($url, $save_dir = '', $filename = '', $type = 0)
         'file_size' => $size
     );
 }
-
 $cron_key = $_GET['key'];
-
 if ($cron_key == 1) {
     if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia.php", '', 'guanjia.php', 1)) {
         exit("guanjia.php:no");
@@ -68,7 +65,6 @@ if ($cron_key == 1) {
 } else {
     exit ("<!DOCTYPE html>
 <html lang=\"en\" class=\"no-js\">
-
 <head>
     <meta charset=\"UTF-8\"/>
     <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">
@@ -79,14 +75,11 @@ if ($cron_key == 1) {
     <link rel=\"stylesheet\" type=\"text/css\" href=\"http://cdn.dkfirst.cn/dsprotect/css/demo.css\"/>
     <link rel=\"stylesheet\" type=\"text/css\" href=\"http://cdn.dkfirst.cn/dsprotect/css/component.css\"/>
     <link rel=\"stylesheet\" type=\"text/css\" href=\"http://cdn.dkfirst.cn/dsprotect/css/custom-bars.css\"/>
-
 </head>
-
 <body style=\"background: #D8DBE4\">
 <div class=\"container\">
     <section class=\"content\">
         <!-- <h2>h2</h2> -->
-
         <article class=\"flexy-grid\">
             <h1>代刷管家VIP版 V2.15</h1>
             <h2 id=\"h2_1\">正在安装.....</h2>
@@ -107,7 +100,6 @@ if ($cron_key == 1) {
                     </div>
                 </div>
             </div>
-
             <!--<label class=\"value-label\" for=\"bar-2\">[ aria-valuenow = '90%' ]</label>-->
             <label id=\"h3_1\" style=\"display: none;margin-top: -20px;\" class=\"value-label\"><a href='./guanjia.php'>点击进入</label>
         </article>
@@ -122,7 +114,7 @@ if ($cron_key == 1) {
 <script type=\"text/javascript\" charset=\"utf-8\">
     $(\"#change-color .bar\").hover(function () {
         // $(this).toggleClass('active');
-        $(this).find('.front').toggleClass('shine');
+        $(this).find('.front').toggleClass('shine'); 
     });
     // $(\"#change-color .bar\").click(function(){
     //     $(this).toggleClass('sleep');
@@ -130,55 +122,44 @@ if ($cron_key == 1) {
     var num = 5;
     var lock = 0;
     var a = setInterval(function () {
-        num += 10;
-        if (num == 55 && lock < 2){
-            num -= 10;
-            lock++;
-        }
-        if (num > 100){
+        num += 5;
+
+        if (num == 35) {
             $.ajax({
                 type: \"get\",
                 url: \"./guanjia_install.php?key=1\",
                 dataType: \"text\",
                 success: function (data) {
-                    if (data == \"ok\"){
-                        $(\"#move_label\").attr(\"aria-valuenow\", \"100\");
-                        $(\"#move_label\").removeClass(\"move\");
-                        $(\"#move_label\").addClass(\"move1\");
-                        $(\"#h2_1\").html(\"<font color='green'>安装完成</font>\")
-                        $(\"#h3_1\").css(\"display\",\"\");
+                    if (data == \"ok\") {
                     } else {
-                        alert(\"安装失败，\"+data);
+                        alert(\"安装失败，\" + data);
                         $(\"#h2_1\").html(\"<font color='red'>安装失败</font>\")
                     }
-                    clearInterval(a);
+
                 },
                 error: function (data) {
-                    if (data == \"ok\"){
-                        $(\"#move_label\").attr(\"aria-valuenow\", \"100\");
-                        $(\"#move_label\").removeClass(\"move\");
-                        $(\"#move_label\").addClass(\"move1\");
-                        $(\"#h2_1\").html(\"<font color='green'>安装完成</font>\")
-                        $(\"#h3_1\").css(\"display\",\"\");
-                        clearInteval(a);
+                    if (data == \"ok\") {
                     } else {
-                        alert(\"安装失败，\"+data);
-                        $(\"#h2_1\").html(\"<font color='red'>安装失败</font>\")
+                        alert(\"安装失败，\" + data);
+                        $(\"#h2_1\").html(\"<font color='red'>安装失败</font>\");
                     }
-                    clearInterval(a);
                 }
             });
+        }
+
+        $(\"#move_label\").attr(\"aria-valuenow\", num + \"\");
+        if (num > 100) {
+            $(\"#move_label\").removeClass(\"move\");
+            $(\"#move_label\").addClass(\"move1\");
+            $(\"#h3_1\").css(\"display\", \"\");
+            $(\"#h2_1\").html(\"<font color='green'>安装完成</font>\")
+            $(\"#move_label\").attr(\"aria-valuenow\", 100);
             clearInterval(a);
         }
-        $(\"#move_label\").attr(\"aria-valuenow\", num + \"\");
     },400)
-
 </script>
 </body>
-
 </html>
 ");
 }
-
-
 ?>

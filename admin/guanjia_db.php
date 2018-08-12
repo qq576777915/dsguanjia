@@ -8,13 +8,9 @@
  * Date: 2018/4/7
  * Time: 16:37
  */
-
 header("Content-Type: text/html; charset=UTF-8");
 include("../includes/common.php");
-
-
 $ver = "2.15";
-
 $title = '代刷管家 - 数据库备份';
 include './head.php';
 if (!isset($_SESSION['authcode'])) {
@@ -35,10 +31,7 @@ while ($res = $DB->fetch($rs)) {
     $last_time = $res['v'];
 //
 //    $user = $dbconfig['user'];
-
-
 }
-
 ?>
 <link href="https://cdn.bootcss.com/sweetalert/1.1.3/sweetalert.min.css" rel="stylesheet">
 <script src="https://cdn.bootcss.com/sweetalert/1.1.3/sweetalert.min.js"></script>
@@ -74,25 +67,36 @@ while ($res = $DB->fetch($rs)) {
 <script src="//lib.baomitu.com/layer/2.3/layer.js"></script>
 <script>
     $("#bt_1").click(function () {
-        var ii = layer.load(2, {shade: [0.1, '#fff']});
-        $.ajax({
-            type: "GET",
-            url: "../guanjia_ajax.php?act=db_backup",
-            dataType: 'json',
-            success: function (data) {
-                layer.close(ii);
-                if (data.code == 1) {
-                    alert("备份成功");
-                } else {
-                    alert("未知错误");
-                }
-                location.reload();
+        swal({
+                title: "确定备份？",
+                text: "此次备份将覆盖上次记录！",
+                type: "info",
+                showCancelButton: true,
+                confirmButtonText: "确定",
+                closeOnConfirm: false
             },
-            error: function (data) {
-                layer.msg('服务器错误');
-                return false;
-            }
-        });
+            function(){
+                var ii = layer.load(2, {shade: [0.1, '#fff']});
+                $.ajax({
+                    type: "GET",
+                    url: "../guanjia_ajax.php?act=db_backup",
+                    dataType: 'json',
+                    success: function (data) {
+                        layer.close(ii);
+                        if (data.code == 1) {
+                            alert("备份成功");
+                        } else {
+                            alert("未知错误");
+                        }
+                        location.reload();
+                    },
+                    error: function (data) {
+                        layer.msg('服务器错误');
+                        return false;
+                    }
+                });
+            });
+
     })
     $("#bt_2").click(function () {
         var ii = layer.load(2, {shade: [0.1, '#fff']});
