@@ -56,12 +56,18 @@ function king_Crawler_1($url, $url2, $head, $body, $cookie)
 //        'b'=>456,
 //        'c'=>789
 //    );
+    $cookie_file = dirname(__FILE__) . '/cookie.txt';
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_HEADER, $head);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+
+    $encode = urlencode($body);
+    $encode = str_replace("%3D", "=", $encode);
+    $encode = str_replace("%26", "&", $encode);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $encode);
     curl_setopt($ch, CURLOPT_COOKIE, $cookie);
+    curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie_file);
     $result = curl_exec($ch);
     $body = "";
     curl_setopt($ch, CURLOPT_URL, $url2);
@@ -69,6 +75,7 @@ function king_Crawler_1($url, $url2, $head, $body, $cookie)
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
     curl_setopt($ch, CURLOPT_COOKIE, $cookie);
+    curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_file);
     $result = curl_exec($ch);
     curl_close($ch);
     return $result;
@@ -100,20 +107,25 @@ function king_Regular($result, $re1)
  */
 function king_Crawler($post, $url1, $url2)
 {
-    $cookie_jar = null;
+//    $cookie_jar = null;
+    $cookie_file = dirname(__FILE__) . '/cookie.txt';
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url1);
     curl_setopt($ch, CURLOPT_HEADER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-    curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_jar);
+
+    $encode = urlencode($post);
+    $encode = str_replace("%3D", "=", $encode);
+    $encode = str_replace("%26", "&", $encode);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $encode);
+    curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie_file);
     $result = curl_exec($ch);
     $post = "";
     curl_setopt($ch, CURLOPT_URL, $url2);
     curl_setopt($ch, CURLOPT_HEADER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-    curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_jar);
+    curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_file);
     $result = curl_exec($ch);
     curl_close($ch);
     return $result;
@@ -403,7 +415,7 @@ switch ($act) {
             $result = king_Crawler($post, $url1, $url2);
 //            $re1 = '/单价为(\S+)元"/';
 //            $float1 = king_Regular($result, $re1);
-            $float1 = midstr($result, "单价为", "元\">");
+            $float1 = midstr($result, "display:none;\">", "</span>");
             $data_3[3][0] = $float1 * $data_3[2][0];
             sleep(2);
         } else if ($shequ_type == 3 || $shequ_type == "3" || $shequ_type == 5 || $shequ_type == "5") {
@@ -731,7 +743,7 @@ switch ($act) {
                 $result = king_Crawler($post, $url1, $url2);
 //                $re1 = '/单价为(\S+)元"/';
 //                $float1 = king_Regular($result, $re1);
-                $float1 = midstr($result, "单价为", "元\">");
+                $float1 = midstr($result, "display:none;\">", "</span>");
                 $data_3[3][0] = $float1 * $data_3[2][0];
                 sleep(2);
             } else if ($shequ_type == 3 || $shequ_type == "3" || $shequ_type == 5 || $shequ_type == "5") {
@@ -874,8 +886,6 @@ switch ($act) {
                 $url2 = "http://" . $shequ_url . "/index/home/order/id/" . $goods_id . ".html";
                 $post = "user=" . $shequ_account . "&pwd=" . $shequ_pwd . "";
                 $result = king_Crawler($post, $url1, $url2);
-
-                exit($result);
                 $sign = stripos($result, "<title>");//根据有无<title>判断是否处于防护中
                 if ($sign > 0) {
                 } else {
