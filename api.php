@@ -5,6 +5,44 @@
  * Date: 2018/8/12
  * Time: 15:55
  */
+
+//error_reporting(E_ALL); ini_set("display_errors", 1);
+error_reporting(0);
+define('IN_CRONLITE', true);
+define('ROOT', dirname(__FILE__) . '/');
+define('TEMPLATE_ROOT', ROOT . '/template/');
+define('SYS_KEY', 'qianchang');
+
+date_default_timezone_set("PRC");
+$date = date("Y-m-d H:i:s");
+session_start();
+
+$scriptpath = str_replace('\\', '/', $_SERVER['SCRIPT_NAME']);
+$sitepath = substr($scriptpath, 0, strrpos($scriptpath, '/'));
+$siteurl = ($_SERVER['SERVER_PORT'] == '443' ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $sitepath . '/';
+
+require ROOT . 'config.php';
+
+if (!isset($port)) $port = '3306';
+
+//连接数据库
+include_once(ROOT . "db.class.php");
+$DB = new DB($host, $user, $pwd, $dbname, $port);
+
+
+include ROOT . 'cache.class.php';
+
+$CACHE = new CACHE();
+$confs = $CACHE->pre_fetch();//获取系统配置
+$conf = $DB->get_row("SELECT * FROM auth_config WHERE id='1' limit 1");//获取系统配置
+$password_hash = '!@#%!s!';
+include ROOT . "function.php";
+
+$my = isset($_GET['my']) ? $_GET['my'] : null;
+
+$clientip = $_SERVER['REMOTE_ADDR'];
+
+
 include 'config.php';
 
 $act = $_GET['act'];
@@ -19,6 +57,11 @@ mysql_select_db($dbName, $connID);
 mysql_query("set names gbk");
 
 switch ($act) {
+    case 'add':
+        $sign = "0";
+        $DB->query("update `auth_api` set cishu=cishu+1 where id = 1");
+        exit($sign);
+        break;
     case 'get':
         $sign = "0";
         $qq = $_GET['qq'];

@@ -34,13 +34,14 @@
                     <li class="<?php echo checkIfActive('index,') ?>">
                         <a href="./"><span class="glyphicon glyphicon-user"></span> 平台首页</a>
                     </li>
-                    <li class="<?php echo checkIfActive('guanjia,guanjia_db,guanjia_setting') ?>">
+                    <li class="<?php echo checkIfActive('guanjia,guanjia_db,guanjia_setting,guanjia_update') ?>">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span
                                     class="glyphicon glyphicon-leaf"></span> 代刷管家<b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             <li><a href="./guanjia.php">管家首页</a></li>
                             <li><a href="./guanjia_db.php">数据备份</a></li>
-                            <li><a href="./guanjia_setting.php">设置</a></li>
+                            <li><a href="./guanjia_setting.php">管家设置</a></li>
+                            <li><a href="./guanjia_update.php">检查更新</a></li>
                         </ul>
                     </li>
                     <li class="<?php echo checkIfActive('list,export') ?>">

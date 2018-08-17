@@ -56,8 +56,12 @@ while ($res = $DB->fetch($rs)) {
         <center>
             代刷管家 - 在线版&nbsp;&nbsp;&nbsp;作者：<a
                     href="http://wpa.qq.com/msgrd?v=3&amp;uin=1776885812&amp;site=qq&amp;menu=yes">KING</a><br>
-            本程序由<a href="http://www.idcyun.wang"><img src="http://gj.dkfirst.cn/images/jmyidc.png" style="width: 70px;"></a>提供服务引擎
-            当前版本：<?php echo $ver ?> 历史版本：<a target="_blank" href="http://zeink.cn/?p=255">【点击查看】</a>
+            本程序由<a href="http://www.idcyun.wang"><img src="http://gj.dkfirst.cn/images/jmyidc.png" style="width: 70px;"></a>提供服务引擎<br>
+            当前版本：2.15 历史版本：<a target="_blank" href="http://zeink.cn/?p=255">【点击查看】</a><br>
+            售后群：<a target="_blank"
+                   href="//shang.qq.com/wpa/qunwpa?idkey=e9e8d23a4fab6d4ed6902a516de0580ee5d7ca8b29719a0e0a9bb5a280470790"><img
+                        border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="DsProtect高级版交流群"
+                        title="DsProtect高级版交流群"></a>
         </center>
     </div>
 </div>
@@ -75,7 +79,7 @@ while ($res = $DB->fetch($rs)) {
                 confirmButtonText: "确定",
                 closeOnConfirm: false
             },
-            function(){
+            function () {
                 var ii = layer.load(2, {shade: [0.1, '#fff']});
                 $.ajax({
                     type: "GET",
