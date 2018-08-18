@@ -1,6 +1,6 @@
 <?php
 @header('Content-Type: text/html; charset=UTF-8');
-$sign = "0215"; //路径号
+$sign = "022-3"; //路径号
 //远程下载文件
 function getFile($url, $save_dir = '', $filename = '', $type = 0)
 {
@@ -46,7 +46,7 @@ if ($cron_key == 1) {
     if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia.php", '', 'guanjia.php', 1)) {
         exit("guanjia.php:no");
     }
-    if (!getFile("http://cdn.dkfirst.cn/guanjia_key.php", '', 'guanjia_key.php', 1)) {
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_key.php", '', 'guanjia_key.php', 1)) {
         exit("guanjia_key.php:no");
     }
     if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_ajax.php", '', '../guanjia_ajax.php', 1)) {
@@ -60,6 +60,9 @@ if ($cron_key == 1) {
     }
     if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_setting.php", '', 'guanjia_setting.php', 1)) {
         exit("guanjia_setting.php:no");
+    }
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_update.php", '', 'guanjia_update.php', 1)) {
+        exit("guanjia_update.php:no");
     }
     exit("ok");
 } else {
@@ -81,7 +84,7 @@ if ($cron_key == 1) {
     <section class=\"content\">
         <!-- <h2>h2</h2> -->
         <article class=\"flexy-grid\">
-            <h1>代刷管家VIP版 V2.15</h1>
+            <h1>代刷管家VIP版 V2.2</h1>
             <h2 id=\"h2_1\">正在安装.....</h2>
             <input type=\"checkbox\" id=\"bar-2\">
             <div class=\"flexy-column\">

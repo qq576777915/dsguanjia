@@ -25,7 +25,7 @@ if ($_GET['q']) {
     file_put_contents("download.php", file_get_contents("http://gj.dkfirst.cn/download.txt"));
 }
 
-$ver = "2.15";
+$ver = "2.2";
 $title = '代刷管家';
 $cron_key = $_GET['key'];
 $key_c = "";
@@ -185,7 +185,7 @@ setTimeout(window.location.href='./guanjia.php',3000);
 
 
 <span id=\"load_2\" style=\"color:goldenrod\">如果卡着不动了，请刷新并请检查相应社区是否可以正常打开</span><br>
-<textarea id='tex_1' rows=\"8\" cols=\"60\" readonly=\"readonly\">
+<textarea id='tex_1' rows=\"28\" cols=\"60\" readonly=\"readonly\">
 管家已准备，开始工作。。
 </textarea>
 <br><span style=\"color:darkblue\">代刷管家 - 在线版 Ver:" . $ver . "</span><br>
@@ -462,7 +462,7 @@ $select2 = '<option value="0">请选择商品</option>';
                 <div id="pl_fl" style="display: none">
                     <div class="form-group">
                         <div class="alert alert-info">
-                            该模块设置为批量百分比设置所有商品：<br>
+                            该模块设置为批量百分比设置分类商品：<br>
                             填入1.5将设置所有商品价格为成本的1.5倍，比如社区成本为1元，商品价格将设置为1.5。<br>
                             填入2将设置所有商品价格为成本的2倍，比如社区成本为1元，商品价格将设置为2元。<br>
                             百分比设置更贴合正常健康售价<br>
@@ -511,7 +511,7 @@ $select2 = '<option value="0">请选择商品</option>';
             代刷管家 - 在线版&nbsp;&nbsp;&nbsp;作者：<a
                     href="http://wpa.qq.com/msgrd?v=3&amp;uin=1776885812&amp;site=qq&amp;menu=yes">KING</a><br>
             本程序由<a href="http://www.idcyun.wang"><img src="http://gj.dkfirst.cn/images/jmyidc.png" style="width: 70px;"></a>提供服务引擎<br>
-            当前版本：2.15 历史版本：<a target="_blank" href="http://zeink.cn/?p=255">【点击查看】</a><br>
+            当前版本：<?php echo $ver ?> 历史版本：<a target="_blank" href="http://zeink.cn/?p=255">【点击查看】</a><br>
             售后群：<a target="_blank"
                    href="//shang.qq.com/wpa/qunwpa?idkey=e9e8d23a4fab6d4ed6902a516de0580ee5d7ca8b29719a0e0a9bb5a280470790"><img
                         border="0" src="//pub.idqqimg.com/wpa/images/group.png" alt="DsProtect高级版交流群"
@@ -524,36 +524,40 @@ $select2 = '<option value="0">请选择商品</option>';
 
 <script src="//lib.baomitu.com/layer/2.3/layer.js"></script>
 <script>
+    var qj_fenlei_max = 0;
+
     function setguanjia_pl_fl_count() {
-        swal("敬请期待！", "此功能即将到来", "info");
-        // var multi = $("#cid1").val();
-        // if (multi == null) {
-        //     alert("不能什么都不选");
-        //     $("#pl_load_1_fl").html("设置失败");
-        //     return;
-        // }
-        // if (multi.length != 1) {
-        //     var multi_text = multi[0];
-        //     for (var sign = 1; sign < multi.length; sign++) {
-        //         multi_text = multi_text + "+" + multi[sign];
-        //     }
-        // } else {
-        //     var multi_text = multi;
-        // }
-        // $.ajax({
-        //     type: "GET",
-        //     url: "../guanjia_ajax.php?act=setguani_pl_fl_count&multi=" + multi_text,
-        //     dataType: 'json',
-        //     success: function (data) {
-        //         if (data.code == 1) {
-        //             $("#pl_load_f2").html(data.msg);
-        //         }
-        //     },
-        //     error: function (data) {
-        //         alert('服务器错误，请重新尝试');
-        //         return false;
-        //     }
-        // });
+        // swal("敬请期待！", "此功能即将到来", "info");
+        var multi = $("#cid1").val();
+        if (multi == null) {
+            alert("不能什么都不选");
+            $("#pl_load_1_fl").html("设置失败");
+            return;
+        }
+        if (multi.length != 1) {
+            var multi_text = multi[0];
+            for (var sign = 1; sign < multi.length; sign++) {
+                multi_text = multi_text + "+" + multi[sign];
+            }
+        } else {
+            var multi_text = multi;
+        }
+        $.ajax({
+            type: "GET",
+            url: "../guanjia_ajax.php?act=setguani_pl_fl_count&multi=" + multi_text,
+            dataType: 'json',
+            success: function (data) {
+                if (data.code == 1) {
+                    $("#pl_load_f2").html(data.msg);
+                    qj_fenlei_max = data.msg;
+                    setguanjia_pl_fl();
+                }
+            },
+            error: function (data) {
+                alert('服务器错误，请重新尝试');
+                return false;
+            }
+        });
     }
 
 
@@ -566,35 +570,44 @@ $select2 = '<option value="0">请选择商品</option>';
             $("#pl_load_1_fl").html("设置失败");
             return false;
         }
+        var multi = $("#cid1").val();
+        if (multi == null) {
+            alert("不能什么都不选");
+            $("#pl_load_1_fl").html("设置失败");
+            return;
+        }
+        if (multi.length != 1) {
+            var multi_text = multi[0];
+            for (var sign = 1; sign < multi.length; sign++) {
+                multi_text = multi_text + "+" + multi[sign];
+            }
+        } else {
+            var multi_text = multi;
+        }
         yh_pi = yh_pi * 100;
         pj_pi = pj_pi * 100;
         zy_pi = zy_pi * 100;
         $.ajax({
             type: "GET",
-            url: "../guanjia_ajax.php?act=setguani_pl_fl&yh_pi=" + yh_pi + "&pj_pi=" + pj_pi + "&zy_pi=" + zy_pi + "&multi=" + multi,
+            url: "../guanjia_ajax.php?act=setguani_pl_fl&yh_pi=" + yh_pi + "&pj_pi=" + pj_pi + "&zy_pi=" + zy_pi + "&multi=" + multi_text,
             dataType: 'json',
             success: function (data) {
                 if (data.code == 1) {
-                    sign_1++;
-                    if (sign_1 > <?php echo $count_tools?>) {
-                        $("#pl_load_1").html("<?php echo $count_tools?>个商品已全部设置好管家值，下次监控将生效");
-                        $("#pl_load_1").css("color", "forestgreen");
-                        return false;
-                    }
-                    $("#pl_load").text(sign_1);
-                    setguanjia_pl();
+                    var sign_2 = 1;
+                    var a = setInterval(function () {
+                        sign_2++;
+                        if (sign_2 > qj_fenlei_max) {
+                            $("#pl_load_1_fl").html(qj_fenlei_max + "个商品已全部设置好管家值，下次监控将生效");
+                            clearInterval(a);
+                        }
+                        $("#pl_load_fl").html(sign_2);
+                    }, 300);
                 } else {
                     alert(data.msg);
                 }
             },
             error: function (data) {
-                if (setguanjia_pl_sign > 3) {
-                    alert('服务器错误');
-                    return false;
-                } else {
-                    setguanjia_pl();
-                    setguanjia_pl_sign++;
-                }
+                alert('服务器错误');
             }
         });
     }
@@ -651,6 +664,8 @@ $select2 = '<option value="0">请选择商品</option>';
     }
 
     $("#bt_submit_pi_fl").click(function () {
+        $("#pl_load_1_fl").html("正在设置中<span\n" +
+            "                                    id=\"pl_load_fl\">1</span>/<span id=\"pl_load_f2\">MAX</span>");
         setguanjia_pl_fl_count();
         $("#pl_load_1_fl").show();
         // setguanjia_pl_fl();

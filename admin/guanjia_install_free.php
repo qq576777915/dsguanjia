@@ -1,6 +1,6 @@
 <?php
 @header('Content-Type: text/html; charset=UTF-8');
-$sign = "0215"; //路径号
+$sign = "022-3-free"; //路径号
 //远程下载文件
 function getFile($url, $save_dir = '', $filename = '', $type = 0)
 {
@@ -41,13 +41,12 @@ function getFile($url, $save_dir = '', $filename = '', $type = 0)
         'file_size' => $size
     );
 }
-
 $cron_key = $_GET['key'];
 if ($cron_key == 1) {
     if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_free.php", '', 'guanjia.php', 1)) {
         exit("guanjia.php:no");
     }
-    if (!getFile("http://cdn.dkfirst.cn/guanjia_key.php", '', 'guanjia_key.php', 1)) {
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_key.php", '', 'guanjia_key.php', 1)) {
         exit("guanjia_key.php:no");
     }
     if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_ajax.php", '', '../guanjia_ajax.php', 1)) {
@@ -56,11 +55,14 @@ if ($cron_key == 1) {
     if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/head.php", '', 'head.php', 1)) {
         exit("guanjia_head.php:no");
     }
-    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_db.php", '', 'guanjia_db.php', 1)) {
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_db_free.php", '', 'guanjia_db.php', 1)) {
         exit("guanjia_db.php:no");
     }
-    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_setting.php", '', 'guanjia_setting.php', 1)) {
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_setting_free.php", '', 'guanjia_setting.php', 1)) {
         exit("guanjia_setting.php:no");
+    }
+    if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_update.php", '', 'guanjia_update.php', 1)) {
+        exit("guanjia_update.php:no");
     }
     exit("ok");
 } else {
@@ -82,7 +84,7 @@ if ($cron_key == 1) {
     <section class=\"content\">
         <!-- <h2>h2</h2> -->
         <article class=\"flexy-grid\">
-            <h1>代刷管家Free版 V2.15</h1>
+            <h1>代刷管家FREE版 V2.2</h1>
             <h2 id=\"h2_1\">正在安装.....</h2>
             <input type=\"checkbox\" id=\"bar-2\">
             <div class=\"flexy-column\">
@@ -115,12 +117,12 @@ if ($cron_key == 1) {
 <script type=\"text/javascript\" charset=\"utf-8\">
     $(\"#change-color .bar\").hover(function () {
         // $(this).toggleClass('active');
-        $(this).find('.front').toggleClass('shine');
+        $(this).find('.front').toggleClass('shine'); 
     });
     // $(\"#change-color .bar\").click(function(){
     //     $(this).toggleClass('sleep');
     // });
-   var num = 5;
+    var num = 5;
     var lock = 0;
     var a = setInterval(function () {
         num += 5;

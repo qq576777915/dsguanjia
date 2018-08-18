@@ -40,7 +40,7 @@
                         <ul class="dropdown-menu">
                             <li><a href="./guanjia.php">管家首页</a></li>
                             <li><a href="./guanjia_db.php">数据备份</a></li>
-                            <li><a href="./guanjia_setting.php">管家设置</a></li>
+                            <li><a href="./guanjia_setting.php">设置</a></li>
                             <li><a href="./guanjia_update.php">检查更新</a></li>
                         </ul>
                     </li>

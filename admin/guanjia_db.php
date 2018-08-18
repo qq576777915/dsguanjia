@@ -10,7 +10,7 @@
  */
 header("Content-Type: text/html; charset=UTF-8");
 include("../includes/common.php");
-$ver = "2.15";
+$ver = "2.2";
 $title = '代刷管家 - 数据库备份';
 include './head.php';
 if (!isset($_SESSION['authcode'])) {

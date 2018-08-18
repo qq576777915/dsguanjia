@@ -315,179 +315,30 @@ switch ($act) {
     case 'setguani_pl_fl':
         //代刷管家 - 批量设置
         $code = 0;
-        $tid = intval($_GET['tid']);
+        $multi = $_GET['multi'];
         $yh_pi = intval($_GET['yh_pi']);
         $pj_pi = intval($_GET['pj_pi']);
         $zy_pi = intval($_GET['zy_pi']);
         $yh_pi = $yh_pi / 100;
         $pj_pi = $pj_pi / 100;
         $zy_pi = $zy_pi / 100;
-        $rs = $DB->query("SELECT * FROM shua_guanjia WHERE tid =" . $tid);
-        if ($res = $DB->fetch($rs)) {
-        } else {
-            $result = array("code" => 1, "msg" => "无此商品");
-            exit(json_encode($result));
-            break;
-        }
-        //收集所有商品柜价 0=客户购价 1=普及购价 2=专业购价
-        $data_1[3][1];
-        //收集所有shua_guanjia 0=客户倍率 1=普及倍率 2=专业倍率 3=状态
-        $data_2[4][1];
-        //收集所有商品信息 0=社区ID 1=商品ID 2=数量 3=商品成本 4=商品类型
-        $data_3[5][1];
-        //收集所社区信息 0=社区URL 1=社区帐号 2=社区密码 3=社区类型 4=paytype(九五时 点数下单0 余额下单1)
-        $data_4[5][1];
-        //收集上个商品信息 0=社区ID 1=商品ID 2=商品数量 3=成本_用户 4=成本_普及 5=成本_专业
-        $data_5[6][1];
-        $rs = $DB->query("SELECT * FROM shua_tools WHERE tid =" . $tid);
-        while ($res = $DB->fetch($rs)) {
-            $data_1[0][0] = $res['price'];
-            $data_1[1][0] = $res['cost'];
-            $data_1[2][0] = $res['cost2'];
-            $data_3[0][0] = $res['shequ'];
-            $data_3[1][0] = $res['goods_id'];
-            $data_3[2][0] = $res['value'];
-            $data_3[4][0] = $res['is_curl'];
-        }
-        if ($data_3[4][0] != "2") {
-            //如果是自营商品 直接跳出
-            $code = 1;
-            $msg = "设置成功，自营商品";
-            $result = array("code" => $code, "msg" => $msg);
-            exit(json_encode($result));
-            break;
-        }
-        $last_tid = $tid - 1;
-        $rs = $DB->query("SELECT * FROM shua_tools WHERE tid =" . $last_tid);
-        if ($res = $DB->fetch($rs)) {
-            $rs = $DB->query("SELECT * FROM shua_tools WHERE tid =" . $last_tid);
-            while ($res = $DB->fetch($rs)) {
-                $data_5[0][0] = $res['shequ'];
-                $data_5[1][0] = $res['goods_id'];
-                $data_5[2][0] = $res['value'];
-            }
-            if ($data_5[0][0] == $data_3[0][0] && $data_5[1][0] == $data_3[1][0]) {
-                //如果是与上个商品同一款
-                $rs = $DB->query("SELECT * FROM shua_guanjia WHERE tid =" . $last_tid);
-                while ($res = $DB->fetch($rs)) {
-                    $data_5[3][0] = $res['price'];
-                    $data_5[4][0] = $res['cost'];
-                    $data_5[5][0] = $res['cost2'];
-                }
-                if ($data_5[0][0] != 0 && $data_5[1][0] != 0 && $data_5[2][0] != 0 && $data_5[0][0] != null && $data_5[1][0] != null && $data_5[2][0] != null) {
-                    //上款商品不为0不为空
-                    $goods_bl = $data_3[2][0] / $data_5[2][0];
-                    $total_1 = $data_5[3][0] * $goods_bl;
-                    $total_2 = $data_5[4][0] * $goods_bl;
-                    $total_3 = $data_5[5][0] * $goods_bl;
-                    $total_1 = $total_1 * ($yh_pi - 1);
-                    $total_2 = $total_1 * ($pj_pi - 1);
-                    $total_3 = $total_1 * ($zy_pi - 1);
-                    $sql = "UPDATE `shua_guanjia` SET `price` = " . $total_1 . ", `cost` = " . $total_2 . ", `cost2` = " . $total_3 . " WHERE `shua_guanjia`.`tid` = " . $tid . ";";
-                    if ($DB->query($sql)) {
-                        $code = 1;
-                        $msg = "设置成功";
-                    } else {
-                        $code = 0;
-                        $msg = "设置失败，错误代码-fo1";
-                    }
-                    $result = array("code" => $code, "msg" => $msg . "跳过流程");
-                    exit(json_encode($result));
-                    break;
-                } else {
-                    $code = 1;
-                    $msg = "设置成功，商品维护/不支持的商品类型";
-                }
-            }
-        }
-        $rs = $DB->query("SELECT * FROM shua_guanjia WHERE tid =" . $tid);
-        while ($res = $DB->fetch($rs)) {
-            $data_2[0][0] = $res['price'];
-            $data_2[1][0] = $res['cost'];
-            $data_2[2][0] = $res['cost2'];
-            $data_2[3][0] = $res['status'];
-        }
-        $rs = $DB->query("SELECT * FROM shua_shequ WHERE id =" . $data_3[0][0]);
-        while ($res = $DB->fetch($rs)) {
-            $data_4[0][0] = $res['url'];
-            $data_4[1][0] = $res['username'];
-            $data_4[2][0] = $res['password'];
-            $data_4[3][0] = $res['type'];
-            $data_4[4][0] = $res['paytype'];
-        }
-        $shequ_type = $data_4[3][0];  //社区类型
-        $shequ_url = $data_4[0][0];   //社区URL
-        $goods_id = $data_3[1][0];             //商品ID
-        $shequ_account = $data_4[1][0];   //社区帐号
-        $shequ_pwd = $data_4[2][0];    //社区密码
-        if ($shequ_type == 1 || $shequ_type == "1") {
-//            亿乐社区开始
-            $url1 = "http://" . $shequ_url . "/index/index_ajax/user/action/login.html";
-            $url2 = "http://" . $shequ_url . "/index/home/order/id/" . $goods_id . ".html";
-            $post = "user=" . $shequ_account . "&pwd=" . $shequ_pwd . "";
-            $result = king_Crawler($post, $url1, $url2);
-            $sign = stripos($result, "<title>");//根据有无<title>判断是否处于防护中
-            if ($sign > 0) {
-            } else {
-                $test = king_Crawler_2($url, "", "", "");
-                $data_sign = midstr($test, "'cookie' : \"", "\",");
-                $data_date = king_get_Date();
-                $yile_cookie = "verynginx_sign_javascript=" . $data_sign . "; path=/; expires=" . $data_date;
-                $result = king_Crawler_1($url1, $url2, "", $post, $yile_cookie);
-            }
-            $re1 = '/Number\(\"([0-9]+\.\S+)\"/';
-            $float1 = king_Regular($result, $re1);
-            $data_3[3][0] = $float1 * $data_3[2][0];
-        } else if ($shequ_type == 0 || $shequ_type == "0" || $shequ_type == 2 || $shequ_type == "2") {
-            //玖伍系统开始
-            $post = "username=" . $shequ_account . "&username_password=" . $shequ_pwd . "";
-            $url1 = "http://" . $shequ_url . "/index.php?m=Home&c=User&a=login&id=&goods_type=";
-            $url2 = "http://" . $shequ_url . "/index.php?m=home&c=goods&a=detail&id=" . $goods_id;
-            $result = king_Crawler($post, $url1, $url2);
-//            $re1 = '/单价为(\S+)元"/';
-//            $float1 = king_Regular($result, $re1);
-            $float1 = midstr($result, "display:none;\">", "</span>");
-            $data_3[3][0] = $float1 * $data_3[2][0];
-            sleep(2);
-        } else if ($shequ_type == 3 || $shequ_type == "3" || $shequ_type == 5 || $shequ_type == "5") {
-            //星墨社区开始
-            $post = "user=" . $shequ_account . "&pwd=" . $shequ_pwd . "&id=" . $goods_id;
-            $url1 = "http://" . $shequ_url . "/Login/UserLogin.html";
-            $url2 = "http://" . $shequ_url . "/form.html";
-            $result = king_Crawler($post, $url1, $url2);
-            $re1 = '/money_dian\"\>(\S+)\<\/span\>/';
-            $float1 = king_Regular($result, $re1);
-            $data_3[3][0] = $float1 * $data_3[2][0];
-        } else {
-            $data_3[3][0] = "0";
-        }
-        if ($data_3[3][0] != "0") {
-            //先判断是否商品维护
-            $total_1 = $data_3[3][0] * ($yh_pi - 1);   //客户管家值
-            if ($total_1 < 0.01) {
-                $total_1 = 0.01;
-            }
-            $total_2 = $data_3[3][0] * ($pj_pi - 1);   //普及管家值
-            if ($total_2 < 0.01) {
-                $total_2 = 0.01;
-            }
-            $total_3 = $data_3[3][0] * ($zy_pi - 1);   //专业管家值
-            if ($total_3 < 0.01) {
-                $total_3 = 0.01;
-            }
-            $sql = "UPDATE `shua_guanjia` SET `price` = " . $total_1 . ", `cost` = " . $total_2 . ", `cost2` = " . $total_3 . " WHERE `shua_guanjia`.`tid` = " . $tid . ";";
+
+
+        $multi_text = explode(' ', $multi);
+        for ($i = 0; $i < count($multi_text); $i++) {
+            $sql = "UPDATE shua_guanjia 
+INNER JOIN shua_tools
+ON shua_guanjia.tid = shua_tools.tid
+SET shua_guanjia.price = " . $yh_pi . ",  shua_guanjia.cost = " . $pj_pi . ", shua_guanjia.cost2 = " . $zy_pi . "
+WHERE shua_tools.cid = " . $multi_text[$i];
             if ($DB->query($sql)) {
-                $code = 1;
-                $msg = "设置成功";
+
             } else {
-                $code = 0;
-                $msg = "设置失败，错误代码-fo1";
+                $result = array("code" => "0", "msg" => $multi_text[$i] . "设置失败");
+                exit(json_encode($result));
             }
-        } else {
-            $code = 1;
-            $msg = "设置成功，商品维护/不支持的商品类型";
         }
-        $result = array("code" => $code, "msg" => $msg . "正常流程");
+        $result = array("code" => "1", "msg" => $msg . "正常流程");
         exit(json_encode($result));
         break;
     case 'setguani_pl':
@@ -535,7 +386,7 @@ switch ($act) {
             $data_3[2][0] = $res['value'];
             $data_3[4][0] = $res['is_curl'];
         }
-        if ($sign_1 == 0){
+        if ($sign_1 == 0) {
             //不存在此商品 直接跳出
             $code = 1;
             $msg = "此ID商品已被删除，自动跳过";
@@ -695,7 +546,7 @@ switch ($act) {
             $data_3[4][0] = $res['is_curl'];
             $data_3[5][0] = $res['name'];
         }
-        if ($sign_1 == 0){
+        if ($sign_1 == 0) {
             //不存在此商品 直接跳出
             $code = 1;
             $msg = "此ID商品已被删除，自动跳过";
