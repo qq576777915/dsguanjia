@@ -12,6 +12,7 @@ header("Content-Type: text/html; charset=UTF-8");
 include("../includes/common.php");
 include("../admin/guanjia_key.php");
 
+
 $ver = "2.2";
 $title = '代刷管家';
 $cron_key = $_GET['key'];
@@ -111,7 +112,7 @@ if ($DB->query($sql)) {
                 } else {
                     $guanjia_new = $guanjia_new . "检测有新增商品，更新失败，错误代码-g00<br>";
                 }
-                echo exit($guanjia_new);
+                echo($guanjia_new);
             }
         } else {
             echo "导入shua_guanjia表失败<br>";
@@ -514,37 +515,7 @@ $select2 = '<option value="0">请选择商品</option>';
     var qj_fenlei_max = 0;
 
     function setguanjia_pl_fl_count() {
-        swal("暂无权限！", "此功能为高级版特属，请支持作者购买原正版程序，给ta一份更新的动力:)如果您已经是授权用户，请在授权页下载高级版程序进行安装","error");
-        // var multi = $("#cid1").val();
-        // if (multi == null) {
-        //     alert("不能什么都不选");
-        //     $("#pl_load_1_fl").html("设置失败");
-        //     return;
-        // }
-        // if (multi.length != 1) {
-        //     var multi_text = multi[0];
-        //     for (var sign = 1; sign < multi.length; sign++) {
-        //         multi_text = multi_text + "+" + multi[sign];
-        //     }
-        // } else {
-        //     var multi_text = multi;
-        // }
-        // $.ajax({
-        //     type: "GET",
-        //     url: "../guanjia_ajax.php?act=setguani_pl_fl_count&multi=" + multi_text,
-        //     dataType: 'json',
-        //     success: function (data) {
-        //         if (data.code == 1) {
-        //             $("#pl_load_f2").html(data.msg);
-        //             qj_fenlei_max = data.msg;
-        //             setguanjia_pl_fl();
-        //         }
-        //     },
-        //     error: function (data) {
-        //         alert('服务器错误，请重新尝试');
-        //         return false;
-        //     }
-        // });
+        swal("暂无权限！", "此功能为高级版特属，请支持作者购买原正版程序，给ta一份更新的动力:)如果您已经是授权用户，请在授权页下载高级版程序进行安装", "error");
     }
 
 
@@ -603,51 +574,7 @@ $select2 = '<option value="0">请选择商品</option>';
     var setguanjia_pl_sign = 1;
 
     function setguanjia_pl() {
-        swal("暂无权限！", "此功能为高级版特属，请支持作者购买原正版程序，给ta一份更新的动力:)如果您已经是授权用户，请在授权页下载高级版程序进行安装","error");
-        //$("#again_bt1").css("display", "none");
-        //var yh_pi = $("#input_yh_pi").val();
-        //var pj_pi = $("#input_pj_pi").val();
-        //var zy_pi = $("#input_zy_pi").val();
-        //if (yh_pi < 1 || pj_pi < 1 || zy_pi < 1) {
-        //    alert("设置低于1的值将会导致最终设置成低于成本的售价！");
-        //    $("#pl_load_1").html("设置失败");
-        //    return false;
-        //}
-        //yh_pi = yh_pi * 100; //
-        //pj_pi = pj_pi * 100;
-        //zy_pi = zy_pi * 100;
-        //$.ajax({
-        //    type: "GET",
-        //    timeout: 15000,
-        //    url: "../guanjia_ajax.php?act=setguani_pl&tid=" + sign_1 + "&yh_pi=" + yh_pi + "&pj_pi=" + pj_pi + "&zy_pi=" + zy_pi,
-        //    dataType: 'json',
-        //    success: function (data) {
-        //        if (data.code == 1) {
-        //            sign_1++;
-        //            if (sign_1 > <?php //echo $count_tools?>//) {
-        //                $("#loading_img").css("display", "none");
-        //                $("#pl_load_1").html("<?php //echo $count_tools?>//个商品已全部设置好管家值，下次监控将生效");
-        //                $("#pl_load_1").css("color", "forestgreen");
-        //                return false;
-        //            }
-        //            setguanjia_pl_sign = 1;
-        //            $("#pl_load").text(sign_1);
-        //            setguanjia_pl();
-        //        } else {
-        //            alert(data.msg);
-        //        }
-        //    },
-        //    error: function (data) {
-        //        if (setguanjia_pl_sign > 3) {
-        //            alert('服务器错误，请稍等1-3分钟点击重试按钮');
-        //            $("#again_bt1").css("display", "");
-        //            return false;
-        //        } else {
-        //            setguanjia_pl();
-        //            setguanjia_pl_sign++;
-        //        }
-        //    }
-        //});
+        swal("暂无权限！", "此功能为高级版特属，请支持作者购买原正版程序，给ta一份更新的动力:)如果您已经是授权用户，请在授权页下载高级版程序进行安装", "error");
     }
 
     $("#bt_submit_pi_fl").click(function () {

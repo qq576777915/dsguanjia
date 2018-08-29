@@ -1,6 +1,6 @@
 <?php
 @header('Content-Type: text/html; charset=UTF-8');
-$sign = "022-3-free"; //路径号
+$sign = "022-5-free"; //路径号
 //远程下载文件
 function getFile($url, $save_dir = '', $filename = '', $type = 0)
 {

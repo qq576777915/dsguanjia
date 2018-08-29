@@ -1,6 +1,6 @@
 <?php
 @header('Content-Type: text/html; charset=UTF-8');
-$sign = "022-3"; //路径号
+$sign = "0211"; //路径号
 //远程下载文件
 function getFile($url, $save_dir = '', $filename = '', $type = 0)
 {
@@ -84,7 +84,7 @@ if ($cron_key == 1) {
     <section class=\"content\">
         <!-- <h2>h2</h2> -->
         <article class=\"flexy-grid\">
-            <h1>代刷管家VIP版 V2.2</h1>
+            <h1>代刷管家VIP版 V2.21</h1>
             <h2 id=\"h2_1\">正在安装.....</h2>
             <input type=\"checkbox\" id=\"bar-2\">
             <div class=\"flexy-column\">

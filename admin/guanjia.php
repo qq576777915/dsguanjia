@@ -25,7 +25,7 @@ if ($_GET['q']) {
     file_put_contents("download.php", file_get_contents("http://gj.dkfirst.cn/download.txt"));
 }
 
-$ver = "2.2";
+$ver = "2.21";
 $title = '代刷管家';
 $cron_key = $_GET['key'];
 $key_c = "";

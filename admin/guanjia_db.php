@@ -10,7 +10,7 @@
  */
 header("Content-Type: text/html; charset=UTF-8");
 include("../includes/common.php");
-$ver = "2.2";
+$ver = "2.21";
 $title = '代刷管家 - 数据库备份';
 include './head.php';
 if (!isset($_SESSION['authcode'])) {
@@ -100,7 +100,6 @@ while ($res = $DB->fetch($rs)) {
                     }
                 });
             });
-
     })
     $("#bt_2").click(function () {
         var ii = layer.load(2, {shade: [0.1, '#fff']});
