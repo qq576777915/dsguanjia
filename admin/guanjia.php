@@ -321,16 +321,18 @@ $select2 = '<option value="0">请选择商品</option>';
                     <a class="btn btn-warning btn-xs"
                        href="javascript:if(confirm('确认要出厂设置吗?'))location='guanjia.php?act=del&key=<?php echo $key_c ?>'">点击我将管家恢复出厂设置</a><br>
                 </div>
-                <div class="form-group">
-                    <div class="input-group">
-                        <div class="input-group-addon">选择分类</div>
-                        <select name="cid" id="cid" class="form-control"><?php echo $select ?></select>
+                <div id="select_main">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">选择分类</div>
+                            <select name="cid" id="cid" class="form-control"><?php echo $select ?></select>
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <div class="input-group">
-                        <div class="input-group-addon">选择商品</div>
-                        <select name="tid" id="tid" class="form-control"><?php echo $select2 ?></select>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-addon">选择商品</div>
+                            <select name="tid" id="tid" class="form-control"><?php echo $select2 ?></select>
+                        </div>
                     </div>
                 </div>
                 <div id="result_1" style="display: none">
@@ -364,7 +366,8 @@ $select2 = '<option value="0">请选择商品</option>';
                         <tr height="25">
                             <td class="col-xs-4 col-sm-4" align="center"> 来自社区：</td>
                             <td class="col-xs-8 col-sm-8" align="center"> <span
-                                        id="now_shequ">****</span></td>
+                                        id="now_shequ">****</span>
+                                <span id="now_shequ_url"></span></td>
                         </tr>
                         </tbody>
 
@@ -383,9 +386,10 @@ $select2 = '<option value="0">请选择商品</option>';
                 </div>
                 <div id="dan">
                     <div class="form-group">
-                        <div class="alert alert-info">该模块为单商品设置管家倍率值，在上方选择相应商品然后下方分别填入相应要以成本多少倍率的价格上架即可<br>商品售价 = 社区成本 *
-                            管家监控值<br><br>
-                            推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5<br><br>
+                        <div class="alert alert-info">该模块为单商品设置管家倍率值，在上方选择相应商品然后下方分别填入相应要以成本多少倍率的价格上架即可<br>
+                            【选择"倍"时】商品售价 = 社区成本 × 管家值<br>
+                            【选择"元"时】商品售价 = 社区成本 + 管家值<br><br>
+                            "倍"时推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5<br><br>
                             【这里只是设置管家值，真正要设置到商品价格里，请等这里跑完之后再去点击上方的监控地址】
                         </div>
                     </div>
@@ -393,18 +397,36 @@ $select2 = '<option value="0">请选择商品</option>';
                         <div class="input-group">
                             <div class="input-group-addon">专业版分站：</div>
                             <input type="text" id="input_zy" class="form-control">
+                            <div class="input-group-addon">
+                                <select id="sel_dan_1">
+                                    <option value="0">倍</option>
+                                    <option value="1">元</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <div class="input-group-addon">普及版分站：</div>
                             <input type="text" id="input_pj" class="form-control">
+                            <div class="input-group-addon">
+                                <select id="sel_dan_2">
+                                    <option value="0">倍</option>
+                                    <option value="1">元</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <div class="input-group-addon">用户：</div>
                             <input type="text" id="input_yh" class="form-control">
+                            <div class="input-group-addon">
+                                <select id="sel_dan_3">
+                                    <option value="0">倍</option>
+                                    <option value="1">元</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -417,11 +439,10 @@ $select2 = '<option value="0">请选择商品</option>';
                     <div class="form-group">
                         <div class="alert alert-info">
                             该模块设置为批量分类百分比设置所有商品：<br>
-                            填入1.5将设置所有商品价格为成本的1.5倍，比如社区成本为1元，商品价格将设置为1.5。<br>
-                            填入2将设置所有商品价格为成本的2倍，比如社区成本为1元，商品价格将设置为2元。<br>
                             百分比设置更贴合正常健康售价<br>
-                            商品售价 = 社区成本 * 管家批量值<br><br>
-                            推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5<br><br>
+                            【选择"倍"时】商品售价 = 社区成本 × 管家值<br>
+                            【选择"元"时】商品售价 = 社区成本 + 管家值<br><br>
+                            "倍"时推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5<br><br>
                             【这里只是设置管家值，真正要设置到商品价格里，请等这里跑完之后再去点击上方的监控地址】
                         </div>
                     </div>
@@ -429,18 +450,36 @@ $select2 = '<option value="0">请选择商品</option>';
                         <div class="input-group">
                             <div class="input-group-addon">专业版分站：</div>
                             <input type="text" id="input_zy_pi" class="form-control">
+                            <div class="input-group-addon">
+                                <select id="sel_qj_1">
+                                    <option value="0">倍</option>
+                                    <option value="1">元</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <div class="input-group-addon">普及版分站：</div>
                             <input type="text" id="input_pj_pi" class="form-control">
+                            <div class="input-group-addon">
+                                <select id="sel_qj_2">
+                                    <option value="0">倍</option>
+                                    <option value="1">元</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <div class="input-group-addon">用户：</div>
                             <input type="text" id="input_yh_pi" class="form-control">
+                            <div class="input-group-addon">
+                                <select id="sel_qj_3">
+                                    <option value="0">倍</option>
+                                    <option value="1">元</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -463,11 +502,10 @@ $select2 = '<option value="0">请选择商品</option>';
                     <div class="form-group">
                         <div class="alert alert-info">
                             该模块设置为批量百分比设置分类商品：<br>
-                            填入1.5将设置所有商品价格为成本的1.5倍，比如社区成本为1元，商品价格将设置为1.5。<br>
-                            填入2将设置所有商品价格为成本的2倍，比如社区成本为1元，商品价格将设置为2元。<br>
                             百分比设置更贴合正常健康售价<br>
-                            商品售价 = 社区成本 * 管家批量值<br><br>
-                            推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5<br><br>
+                            【选择"倍"时】商品售价 = 社区成本 × 管家值<br>
+                            【选择"元"时】商品售价 = 社区成本 + 管家值<br><br>
+                            "倍"时推荐设置：<br>专业 1.2 <br>普及 1.4 <br>用户 1.5<br><br>
                             【这里只是设置管家值，真正要设置到商品价格里，请等这里跑完之后再去点击上方的监控地址】
                         </div>
                     </div>
@@ -482,18 +520,36 @@ $select2 = '<option value="0">请选择商品</option>';
                         <div class="input-group">
                             <div class="input-group-addon">专业版分站：</div>
                             <input type="text" id="input_zy_pi_fl" class="form-control">
+                            <div class="input-group-addon">
+                                <select id="sel_qj_fl_1">
+                                    <option value="0">倍</option>
+                                    <option value="1">元</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <div class="input-group-addon">普及版分站：</div>
                             <input type="text" id="input_pj_pi_fl" class="form-control">
+                            <div class="input-group-addon">
+                                <select id="sel_qj_fl_2">
+                                    <option value="0">倍</option>
+                                    <option value="1">元</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <div class="input-group-addon">用户：</div>
                             <input type="text" id="input_yh_pi_fl" class="form-control">
+                            <div class="input-group-addon">
+                                <select id="sel_qj_fl_3">
+                                    <option value="0">倍</option>
+                                    <option value="1">元</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
@@ -562,6 +618,7 @@ $select2 = '<option value="0">请选择商品</option>';
 
 
     function setguanjia_pl_fl() {
+        var sel_qj_fl_1 = $("#sel_qj_fl_1 option:selected").val();
         var yh_pi = $("#input_yh_pi_fl").val();
         var pj_pi = $("#input_pj_pi_fl").val();
         var zy_pi = $("#input_zy_pi_fl").val();
@@ -589,7 +646,7 @@ $select2 = '<option value="0">请选择商品</option>';
         zy_pi = zy_pi * 100;
         $.ajax({
             type: "GET",
-            url: "../guanjia_ajax.php?act=setguani_pl_fl&yh_pi=" + yh_pi + "&pj_pi=" + pj_pi + "&zy_pi=" + zy_pi + "&multi=" + multi_text,
+            url: "../guanjia_ajax.php?act=setguani_pl_fl&yh_pi=" + yh_pi + "&status=" + sel_qj_fl_1 + "&pj_pi=" + pj_pi + "&zy_pi=" + zy_pi + "&multi=" + multi_text,
             dataType: 'json',
             success: function (data) {
                 if (data.code == 1) {
@@ -618,6 +675,7 @@ $select2 = '<option value="0">请选择商品</option>';
     function setguanjia_pl() {
         // swal("暂无权限！", "此功能为高级版特属，请支持作者购买原正版程序，给ta一份更新的动力:)如果您已经是授权用户，请在授权页下载高级版程序进行安装","error");
         $("#again_bt1").css("display", "none");
+        var sel_qj_1 = $("#sel_qj_1 option:selected").val();
         var yh_pi = $("#input_yh_pi").val();
         var pj_pi = $("#input_pj_pi").val();
         var zy_pi = $("#input_zy_pi").val();
@@ -632,7 +690,7 @@ $select2 = '<option value="0">请选择商品</option>';
         $.ajax({
             type: "GET",
             timeout: 15000,
-            url: "../guanjia_ajax.php?act=setguani_pl&tid=" + sign_1 + "&yh_pi=" + yh_pi + "&pj_pi=" + pj_pi + "&zy_pi=" + zy_pi,
+            url: "../guanjia_ajax.php?act=setguani_pl&tid=" + sign_1 + "&status=" + sel_qj_1 + "&yh_pi=" + yh_pi + "&pj_pi=" + pj_pi + "&zy_pi=" + zy_pi,
             dataType: 'json',
             success: function (data) {
                 if (data.code == 1) {
@@ -675,6 +733,7 @@ $select2 = '<option value="0">请选择商品</option>';
         setguanjia_pl();
     });
     $("#button_dan").click(function () {
+        $("#select_main").css("display", "");
         $("#button_dan").css("background", "#EEEEEE");
         $("#button_pl").css("background", "#FFF");
         $("#button_pl_fl").css("background", "#FFF");
@@ -683,6 +742,7 @@ $select2 = '<option value="0">请选择商品</option>';
         $("#pl_fl").css("display", "none");
     });
     $("#button_pl").click(function () {
+        $("#select_main").css("display", "none");
         $("#button_dan").css("background", "#FFF");
         $("#button_pl").css("background", "#EEEEEE");
         $("#button_pl_fl").css("background", "#FFF");
@@ -691,6 +751,7 @@ $select2 = '<option value="0">请选择商品</option>';
         $("#pl_fl").css("display", "none");
     });
     $("#button_pl_fl").click(function () {
+        $("#select_main").css("display", "none");
         $("#button_dan").css("background", "#FFF");
         $("#button_pl").css("background", "#FFF");
         $("#button_pl_fl").css("background", "#EEEEEE");
@@ -766,15 +827,18 @@ $select2 = '<option value="0">请选择商品</option>';
                 $shequ_name = "QQbug社区";
                 break;
             case '11':
-                $shequ_name = "自营（人工商品）";
+                $shequ_name = "聚梦社区";
                 break;
             case '12':
-                $shequ_name = "自营（自定义访问URL/POST）";
+                $shequ_name = "自营（人工商品）";
                 break;
             case '13':
-                $shequ_name = "自营（自动发送提醒邮件）";
+                $shequ_name = "自营（自定义访问URL/POST）";
                 break;
             case '14':
+                $shequ_name = "自营（自动发送提醒邮件）";
+                break;
+            case '15':
                 $shequ_name = "自营（自动发卡密）";
                 break;
             default:
@@ -802,6 +866,15 @@ $select2 = '<option value="0">请选择商品</option>';
                         $("#price_pj").text('' + res.cost + '');
                         $("#price_yh").text('' + res.price + '');
                         $("#now_shequ").text('' + shequ_name_get(res.shequ) + '');
+                        if (res.shequ < 12) {
+                            $("#now_shequ_url").css("display", "");
+                            $("#now_shequ_url").html("(<a target='_blank' href='http://" + res.shequ_url + "'>" + res.shequ_url + "</a>)");
+                        } else {
+                            $("#now_shequ_url").css("display", "none");
+                        }
+                        $("#sel_dan_1").val(res.status_guanjia);
+                        $("#sel_dan_2").val(res.status_guanjia);
+                        $("#sel_dan_3").val(res.status_guanjia);
                         if (res.cost2_guanjia == null) {
                             $("#input_zy").val('');
                         } else {
@@ -844,9 +917,55 @@ $select2 = '<option value="0">请选择商品</option>';
             setTable()
         }
     });
+    $("#sel_qj_fl_1").change(function () {
+        var sel_qj_fl_1 = $("#sel_qj_fl_1 option:selected").val();
+        $("#sel_qj_fl_2").val(sel_qj_fl_1);
+        $("#sel_qj_fl_3").val(sel_qj_fl_1);
+    });
+    $("#sel_qj_fl_2").change(function () {
+        var sel_qj_fl_1 = $("#sel_qj_fl_2 option:selected").val();
+        $("#sel_qj_fl_3").val(sel_qj_fl_1);
+        $("#sel_qj_fl_1").val(sel_qj_fl_1);
+    });
+    $("#sel_qj_fl_3").change(function () {
+        var sel_qj_fl_1 = $("#sel_qj_fl_3 option:selected").val();
+        $("#sel_qj_fl_2").val(sel_qj_fl_1);
+        $("#sel_qj_fl_1").val(sel_qj_fl_1);
+    });
+    $("#sel_qj_1").change(function () {
+        var sel_qj_1 = $("#sel_qj_1 option:selected").val();
+        $("#sel_qj_2").val(sel_qj_1);
+        $("#sel_qj_3").val(sel_qj_1);
+    });
+    $("#sel_qj_2").change(function () {
+        var sel_qj_1 = $("#sel_qj_2 option:selected").val();
+        $("#sel_qj_3").val(sel_qj_1);
+        $("#sel_qj_1").val(sel_qj_1);
+    });
+    $("#sel_qj_3").change(function () {
+        var sel_qj_1 = $("#sel_qj_3 option:selected").val();
+        $("#sel_qj_2").val(sel_qj_1);
+        $("#sel_qj_1").val(sel_qj_1);
+    });
+    $("#sel_dan_1").change(function () {
+        var sel_dan_1 = $("#sel_dan_1 option:selected").val();
+        $("#sel_dan_2").val(sel_dan_1);
+        $("#sel_dan_3").val(sel_dan_1);
+    });
+    $("#sel_dan_2").change(function () {
+        var sel_dan_1 = $("#sel_dan_2 option:selected").val();
+        $("#sel_dan_3").val(sel_dan_1);
+        $("#sel_dan_1").val(sel_dan_1);
+    });
+    $("#sel_dan_3").change(function () {
+        var sel_dan_1 = $("#sel_dan_3 option:selected").val();
+        $("#sel_dan_2").val(sel_dan_1);
+        $("#sel_dan_1").val(sel_dan_1);
+    });
     $("#bt_submit").click(function () {
         var options = $("#tid option:selected");
         var tid = options.val();
+        var sel_dan_1 = $("#sel_dan_1 option:selected").val();
         var price = $("#input_yh").val();
         var cost = $("#input_pj").val();
         var cost_2 = $("#input_zy").val();
@@ -856,7 +975,7 @@ $select2 = '<option value="0">请选择商品</option>';
         var ii = layer.load(2, {shade: [0.1, '#fff']});
         $.ajax({
             type: "GET",
-            url: "../guanjia_ajax.php?act=setguanjia&tid=" + tid + "&price=" + price + "&cost=" + cost + "&cost_2=" + cost_2,
+            url: "../guanjia_ajax.php?act=setguanjia&tid=" + tid + "&status=" + sel_dan_1 + "&price=" + price + "&cost=" + cost + "&cost_2=" + cost_2,
             dataType: 'json',
             success: function (data) {
                 layer.close(ii);
@@ -873,5 +992,31 @@ $select2 = '<option value="0">请选择商品</option>';
         });
     })
     $("#AN1").val("20");
+
+    $.ajax({
+        type: "GET",
+        url: "../guanjia_ajax.php?act=check_yile_config",
+        dataType: 'json',
+        success: function (data) {
+            if (data == 1 || data == "1") {
+                swal({
+                        title: "检测提醒",
+                        text: "检测您有未设置Token的亿乐对接社区，将无法正常监控亿乐社区的商品价格（Token信息需要进入相应社区然后登陆后，个人资料里点我的密匙获取）",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "立即设置",
+                        closeOnConfirm: false
+                    },
+                    function () {
+                        window.location.href = "shequlist.php";
+                    });
+            }
+        },
+        error: function (data) {
+            layer.msg('服务器错误，请重新尝试');
+            return false;
+        }
+    });
 </script>
 </html>

@@ -5,6 +5,47 @@ $act = isset($_GET['act']) ? daddslashes($_GET['act']) : null;
 if ($is_fenzhan == true) {
     $price_obj = new Price($siterow['zid'], $siterow);
 }
+function gbk_to_utf8($data)
+{
+    if (is_array($data)) {
+        foreach ($data as $k => $v) {
+            if (is_array($v)) {
+                $data[$k] = gbk_to_utf8($v);
+            } else {
+                $data[$k] = iconv('gbk', 'utf-8', $v);
+            }
+        }
+        return $data;
+    } else {
+        $data = iconv('gbk', 'utf-8', $data);
+        return $data;
+    }
+}
+
+function king_get_yile($token, $key, $shequ_url, $tid)
+{
+    $params['api_token'] = $token;
+    $params['timestamp'] = time();
+    $params['gid'] = $tid;
+    $sign = getSign($params, $key);
+    return king_Crawler_2("http://" . $shequ_url . ".api.94sq.cn/api/goods/info", "", "api_token=" . $token . "&timestamp=" . time() . "&sign=" . $sign . "&gid=" . $tid, "");
+}
+
+function getSign($param, $key)
+{
+    $signPars = "";
+    ksort($param);
+    foreach ($param as $k => $v) {
+        if ("sign" != $k && "" != $v) {
+            $signPars .= $k . "=" . $v . "&";
+        }
+    }
+    $signPars = trim($signPars, '&');
+    $signPars .= $key;
+    $sign = md5($signPars);
+    return $sign;
+}
+
 function king_get_Date()
 {
     $time = time(); //当前时间戳
@@ -41,7 +82,7 @@ function king_Crawler_2($url, $head, $body, $cookie)
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_HEADER, $head);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($ch,CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:36.0) Gecko/20100101 Firefox/36.0');
+    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:36.0) Gecko/20100101 Firefox/36.0');
     curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
     curl_setopt($ch, CURLOPT_COOKIE, $cookie);
     $result = curl_exec($ch);
@@ -68,7 +109,7 @@ function king_Crawler_1($url, $url2, $head, $body, $cookie)
     $encode = str_replace("%26", "&", $encode);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $encode);
     curl_setopt($ch, CURLOPT_COOKIE, $cookie);
-    curl_setopt($ch,CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:36.0) Gecko/20100101 Firefox/36.0');
+    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:36.0) Gecko/20100101 Firefox/36.0');
     curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie_file);
     $result = curl_exec($ch);
     $body = "";
@@ -76,7 +117,7 @@ function king_Crawler_1($url, $url2, $head, $body, $cookie)
     curl_setopt($ch, CURLOPT_HEADER, $head);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-    curl_setopt($ch,CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:36.0) Gecko/20100101 Firefox/36.0');
+    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:36.0) Gecko/20100101 Firefox/36.0');
     curl_setopt($ch, CURLOPT_COOKIE, $cookie);
     curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_file);
     $result = curl_exec($ch);
@@ -115,7 +156,7 @@ function king_Crawler($post, $url1, $url2)
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url1);
     curl_setopt($ch, CURLOPT_HEADER, false);
-    curl_setopt($ch,CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:36.0) Gecko/20100101 Firefox/36.0');
+    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:36.0) Gecko/20100101 Firefox/36.0');
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
     $encode = urlencode($post);
@@ -126,7 +167,7 @@ function king_Crawler($post, $url1, $url2)
     $result = curl_exec($ch);
     $post = "";
     curl_setopt($ch, CURLOPT_URL, $url2);
-    curl_setopt($ch,CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:36.0) Gecko/20100101 Firefox/36.0');
+    curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.3; WOW64; rv:36.0) Gecko/20100101 Firefox/36.0');
     curl_setopt($ch, CURLOPT_HEADER, false);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
@@ -137,6 +178,38 @@ function king_Crawler($post, $url1, $url2)
 }
 
 switch ($act) {
+    case 'change_discount':
+        //代刷管家 - 折扣率修改
+        $code = 0;
+        $lock = $_GET['lock'];
+        $sql = "UPDATE `shua_guanjia_config` SET `v` = '" . $lock . "' WHERE `shua_guanjia_config`.`k` = 'Discont';";
+        if ($DB->query($sql)) {
+            $code = 1;
+            $msg = "设置成功";
+        } else {
+            $code = 0;
+            $msg = "设置失败";
+        }
+        $result = array("code" => $code, "msg" => $msg);
+        exit(json_encode($result));
+        break;
+        break;
+    case 'check_yile_config':
+        //代刷管家 - 检测亿乐对接值
+        $key = 0;
+        $rs = $DB->query("SELECT * FROM `shua_shequ` WHERE type = 1");
+        while ($res = $DB->fetch($rs)) {
+            $yile_key = $res['v'];
+            if (strlen($res['password']) != 32) {
+                $key = 1;
+            }
+        }
+        if ($key == 1) {
+            exit("1");
+        }
+        exit("0");
+        break;
+
     case 'change_gjkey':
         //代刷管家 - 密匙修改
         $code = 0;
@@ -320,6 +393,7 @@ switch ($act) {
     case 'setguani_pl_fl':
         //代刷管家 - 批量设置
         $code = 0;
+        $status = intval($_GET['status']);
         $multi = $_GET['multi'];
         $yh_pi = intval($_GET['yh_pi']);
         $pj_pi = intval($_GET['pj_pi']);
@@ -334,7 +408,7 @@ switch ($act) {
             $sql = "UPDATE shua_guanjia 
 INNER JOIN shua_tools
 ON shua_guanjia.tid = shua_tools.tid
-SET shua_guanjia.price = " . $yh_pi . ",  shua_guanjia.cost = " . $pj_pi . ", shua_guanjia.cost2 = " . $zy_pi . "
+SET shua_guanjia.price = " . $yh_pi . ",  shua_guanjia.status = " . $status . ",  shua_guanjia.cost = " . $pj_pi . ", shua_guanjia.cost2 = " . $zy_pi . "
 WHERE shua_tools.cid = " . $multi_text[$i];
             if ($DB->query($sql)) {
 
@@ -349,6 +423,7 @@ WHERE shua_tools.cid = " . $multi_text[$i];
     case 'setguani_pl':
         //代刷管家 - 批量设置
         $code = 0;
+        $status = intval($_GET['status']);
         $tid = intval($_GET['tid']);
         $yh_pi = intval($_GET['yh_pi']);
         $pj_pi = intval($_GET['pj_pi']);
@@ -496,7 +571,7 @@ WHERE shua_tools.cid = " . $multi_text[$i];
 //            if ($total_3 < 0.01) {
 //                $total_3 = 0.01;
 //            }
-            $sql = "UPDATE `shua_guanjia` SET `price` = " . $yh_pi . ", `cost` = " . $pj_pi . ", `cost2` = " . $zy_pi . " WHERE `shua_guanjia`.`tid` = " . $tid . ";";
+            $sql = "UPDATE `shua_guanjia` SET `price` = " . $yh_pi . ",`status` = " . $status . ", `cost` = " . $pj_pi . ", `cost2` = " . $zy_pi . " WHERE `shua_guanjia`.`tid` = " . $tid . ";";
             if ($DB->query($sql)) {
                 $code = 1;
                 $msg = "设置成功";
@@ -519,25 +594,33 @@ WHERE shua_tools.cid = " . $multi_text[$i];
         $data_1[3][1];
         //收集所有shua_guanjia 0=客户倍率 1=普及倍率 2=专业倍率 3=状态
         $data_2[4][1];
-        //收集商品信息 0=社区ID 1=商品ID 2=数量 3=商品成本 4=商品类型 5=商品名称
+        //收集商品信息 0=社区ID 1=商品ID 2=数量 3=商品成本 4=商品类型 5=商品名称 6=上架状态
         $data_3[6][1];
         //收集所社区信息 0=社区URL 1=社区帐号 2=社区密码 3=社区类型 4=paytype(九五时 点数下单0 余额下单1)
         $data_4[5][1];
-        //收集上个商品信息 0=社区ID 1=商品ID 2=商品数量 3=成本_用户 4=成本_普及 5=成本_专业
+        //收集上个商品信息 0=社区ID 1=商品ID 2=商品数量 3=成本_用户 4=成本_普及 5=成本_专业 6=上架状态
         $data_5[6][1];
         //自动上下架  1=是 2=否
         $auto_sjx;
+        //折扣率
+        $discount;
         //检测商品是否维护
         $yile_lock = 0;
+        //美化lock
+        $mh;
         //记录1
         $sign_1 = 0;
-        $rs = $DB->query("SELECT * FROM `shua_guanjia_config` AS a WHERE k = 'isAutoGrounding'");
+        $rs = $DB->query("SELECT * FROM `shua_guanjia_config` AS a");
         while ($res = $DB->fetch($rs)) {
-            $auto_sjx = $res['v'];
-        }
-        $rs = $DB->query("SELECT * FROM `shua_guanjia_config` AS a WHERE k = 'isMH'");
-        while ($res = $DB->fetch($rs)) {
-            $mh = $res['v'];
+            if ($res['k'] == "isAutoGrounding") {
+                $auto_sjx = $res['v'];
+            }
+            if ($res['k'] == "isMH") {
+                $mh = $res['v'];
+            }
+            if ($res['k'] == "Discont") {
+                $discount = $res['v'];
+            }
         }
         $rs = $DB->query("SELECT * FROM shua_tools WHERE tid =" . $tid);
         while ($res = $DB->fetch($rs)) {
@@ -550,6 +633,7 @@ WHERE shua_tools.cid = " . $multi_text[$i];
             $data_3[2][0] = $res['value'];
             $data_3[4][0] = $res['is_curl'];
             $data_3[5][0] = $res['name'];
+            $data_3[6][0] = $res['active'];
         }
         if ($sign_1 == 0) {
             //不存在此商品 直接跳出
@@ -583,22 +667,46 @@ WHERE shua_tools.cid = " . $multi_text[$i];
                     $data_5[3][0] = $res['price'];
                     $data_5[4][0] = $res['cost'];
                     $data_5[5][0] = $res['cost2'];
+                    $data_5[6][0] = $res['active'];
                 }
                 if ($data_5[3][0] > 0.01 && $data_5[4][0] > 0.01 && $data_5[5][0] > 0.01) {
                     //上款商品不为0不为空不为0.01、
                     $goods_bl = $data_3[2][0] / $data_5[2][0];  // 这个商品：上个商品
-                    $total_1 = $data_5[3][0] * $goods_bl;
-                    $total_2 = $data_5[4][0] * $goods_bl;
-                    $total_3 = $data_5[5][0] * $goods_bl;
+                    if ($data_3[2][0] > $data_5[2][0] && $discount != 0) {
+                        //开启了折扣率
+                        $num = floatval($discount) / 100;
+                        $total_1 = $data_5[3][0] * $goods_bl * $num;
+                        $total_2 = $data_5[4][0] * $goods_bl * $num;
+                        $total_3 = $data_5[5][0] * $goods_bl * $num;
+                        if ($mh == 1 || $mh == "1") {
+                            $total_1 = round($total_1, 1);
+                            $total_2 = round($total_2, 1);
+                            $total_3 = round($total_3, 1);
+                        } else {
+                            $total_1 = round($total_1, 2);
+                            $total_2 = round($total_2, 2);
+                            $total_3 = round($total_3, 2);
+                        }
+                        $msg = "折扣操作";
+                    } else {
+                        $total_1 = $data_5[3][0] * $goods_bl;
+                        $total_2 = $data_5[4][0] * $goods_bl;
+                        $total_3 = $data_5[5][0] * $goods_bl;
+                    }
                     $sql = "UPDATE `shua_tools` SET `price` = " . $total_1 . ", `cost` = " . $total_2 . ", `cost2` = " . $total_3 . " WHERE `shua_tools`.`tid` = " . $tid . ";";
                     if ($DB->query($sql)) {
+                        if ($data_5[6][0] == "0" || $data_5[6][0] == 0) {
+                            //如果上个商品下架了 一起下架
+                            $sql = "UPDATE `shua_tools` SET `active` = '0' WHERE `shua_tools`.`tid` = " . $tid . ";";
+                            $DB->query($sql);
+                        }
                         $code = 1;
-                        $msg = "设置成功";
+                        $msg = $msg . "设置成功";
                     } else {
                         $code = 0;
-                        $msg = "设置失败，错误代码-ffo1";
+                        $msg = $msg . "设置失败，错误代码-ffo1";
                     }
-                    $result = array("code" => $code, "msg" => $msg . "跳过流程", "name" => $data_3[5][0]);
+                    $result = array("code" => $code, "msg" => $msg . "与上个商品同款，已进行同样设置。", "name" => $data_3[5][0]);
                     exit(json_encode($result));
                     break;
                 } else {
@@ -630,27 +738,53 @@ WHERE shua_tools.cid = " . $multi_text[$i];
             $shequ_pwd = $data_4[2][0];    //社区密码
             if ($shequ_type == 1 || $shequ_type == "1") {
 //            亿乐社区开始
-                $url1 = "http://" . $shequ_url . "/index/index_ajax/user/action/login.html";
-                $url2 = "http://" . $shequ_url . "/index/home/order/id/" . $goods_id . ".html";
-                $post = "user=" . $shequ_account . "&pwd=" . $shequ_pwd . "";
-                $result = king_Crawler($post, $url1, $url2);
-                sleep(2);
-                $sign = stripos($result, "<title>");//根据有无<title>判断是否处于防护中
-                if ($sign > 0) {
-                } else {
-                    sleep(2);
-                    $test = king_Crawler_2($url, "", "", "");
-                    $data_sign = midstr($test, "'cookie' : \"", "\",");
-                    $data_date = king_get_Date();
-                    $yile_cookie = "verynginx_sign_javascript=" . $data_sign . "; path=/; expires=" . $data_date;
-                    sleep(2);
-                    $result = king_Crawler_1($url1, $url2, "", $post, $yile_cookie);
+//                $url1 = "http://" . $shequ_url . "/index/index_ajax/user/action/login.html";
+//                $url2 = "http://" . $shequ_url . "/index/home/order/id/" . $goods_id . ".html";
+//                $post = "user=" . $shequ_account . "&pwd=" . $shequ_pwd . "";
+//                $result = king_Crawler($post, $url1, $url2);
+//                sleep(2);
+//                $sign = stripos($result, "<title>");//根据有无<title>判断是否处于防护中
+//                if ($sign > 0) {
+//                } else {
+//                    sleep(2);
+//                    $test = king_Crawler_2($url, "", "", "");
+//                    $data_sign = midstr($test, "'cookie' : \"", "\",");
+//                    $data_date = king_get_Date();
+//                    $yile_cookie = "verynginx_sign_javascript=" . $data_sign . "; path=/; expires=" . $data_date;
+//                    sleep(2);
+//                    $result = king_Crawler_1($url1, $url2, "", $post, $yile_cookie);
+//                }
+//
+//                $yile_lock = stripos($result, "禁止下单，业务维护中！");
+//                $re1 = '/Number\(\"([0-9]+\.\S+)\"/';
+//                $float1 = king_Regular($result, $re1);
+//                $data_3[3][0] = $float1 * $data_3[2][0];
+                $test = king_get_yile($shequ_account, $shequ_pwd, $shequ_url, $goods_id);
+                $json = json_decode($test);
+                $status = $json->status . "";
+                $messag = $json->message;
+                if ($status == "-105") {
+                    $price_chengben = "该商品对接社区Token配置有误，跳过设置";
+                    $result = array("code" => "1", "msg" => $price_chengben, "name" => $data_3[5][0]);
+                    exit(json_encode($result));
                 }
 
-                $yile_lock = stripos($result, "禁止下单，业务维护中！");
-                $re1 = '/Number\(\"([0-9]+\.\S+)\"/';
-                $float1 = king_Regular($result, $re1);
-                $data_3[3][0] = $float1 * $data_3[2][0];
+                if ($status == "-1") {
+                    $price_chengben = "该商品ID在社区不存在，跳过设置并下架";
+                    $sql = "UPDATE `shua_tools` SET `active` = '0' WHERE `shua_tools`.`tid` = " . $tid . ";";
+                    $DB->query($sql);
+                    $result = array("code" => "1", "msg" => $price_chengben, "name" => $data_3[5][0]);
+                    exit(json_encode($result));
+                }
+                if ($status == "0") {
+                    $close = $json->data->close . "";
+                    if ($close == "1") {
+                        $data_3[3][0] = 0;
+                    } else {
+                        $float1 = floatval($json->data->price . "");
+                        $data_3[3][0] = $float1 * $data_3[2][0];
+                    }
+                }
             } else if ($shequ_type == 0 || $shequ_type == "0" || $shequ_type == 2 || $shequ_type == "2") {
                 //玖伍系统开始
                 $post = "username=" . $shequ_account . "&username_password=" . $shequ_pwd . "";
@@ -676,14 +810,22 @@ WHERE shua_tools.cid = " . $multi_text[$i];
             }
             if ($data_3[3][0] != "0" || $data_3[3][0] != 0) {
                 //先判断是否商品维护
-                if ($data_3[3][0] <= 0.01) {
-                    $total_1 = 0.01;
-                    $total_2 = 0.01;
-                    $total_3 = 0.01;
+                if ($data_2[3][0] == "1" || $data_2[3][0] == 1) {
+                    //如果是定值加价
+                    $total_1 = $data_3[3][0] + $data_2[0][0];     //客户购价
+                    $total_2 = $data_3[3][0] + $data_2[1][0];     //普及购价
+                    $total_3 = $data_3[3][0] + $data_2[2][0];    //专业购价
                 } else {
-                    $total_1 = $data_3[3][0] * $data_2[0][0];     //客户购价
-                    $total_2 = $data_3[3][0] * $data_2[1][0];     //普及购价
-                    $total_3 = $data_3[3][0] * $data_2[2][0];    //专业购价
+                    //倍率加价
+                    if ($data_3[3][0] <= 0.01) {
+                        $total_1 = 0.01;
+                        $total_2 = 0.01;
+                        $total_3 = 0.01;
+                    } else {
+                        $total_1 = $data_3[3][0] * $data_2[0][0];     //客户购价
+                        $total_2 = $data_3[3][0] * $data_2[1][0];     //普及购价
+                        $total_3 = $data_3[3][0] * $data_2[2][0];    //专业购价
+                    }
                 }
                 if ($mh == 1 || $mh == '1') {
                     //美化
@@ -699,28 +841,23 @@ WHERE shua_tools.cid = " . $multi_text[$i];
                     $code = 1;
                     $msg = "设置成功";
                     if ($auto_sjx == 1 || $auto_sjx == "1") {
-                        if ($yile_lock > 1) {
-                            //搜查到有“禁止下单”字样，在维护，下架
-                            $sql = "UPDATE `shua_tools` SET `active` = '0' WHERE `shua_tools`.`tid` = " . $tid . ";";
-                            $DB->query($sql);
-                        } else {
-                            //商品价格正常设置 恢复上架
-                            $sql = "UPDATE `shua_tools` SET `active` = '1' WHERE `shua_tools`.`tid` = " . $tid . ";";
-                            $DB->query($sql);
-                        }
+                        //商品价格正常设置 恢复上架
+                        $sql = "UPDATE `shua_tools` SET `active` = '1' WHERE `shua_tools`.`tid` = " . $tid . ";";
+                        $DB->query($sql);
                     }
                 } else {
                     $code = 0;
                     $msg = "设置失败，错误代码-eo1";
                 }
             } else {
+                $code = 1;
+                $msg = "商品维护，直接跳过";
                 if ($auto_sjx == 1 || $auto_sjx == "1") {
                     //如果商品维护 / 不存在 自动下架该商品
                     $sql = "UPDATE `shua_tools` SET `active` = '0' WHERE `shua_tools`.`tid` = " . $tid . ";";
                     $DB->query($sql);
+                    $msg = "商品维护，直接跳过，并下架此商品";
                 }
-                $code = 1;
-                $msg = "商品维护，直接跳过，并下架此商品";
             }
         } else {
             $code = 1;
@@ -733,6 +870,7 @@ WHERE shua_tools.cid = " . $multi_text[$i];
     'setguanjia':
         //代刷管家 - 变量用户设置
         $code = 0;
+        $status = intval($_GET['status']);
         $tid = intval($_GET['tid']);
         $price = intval($_GET['price']);
         $cost = intval($_GET['cost']);
@@ -740,7 +878,7 @@ WHERE shua_tools.cid = " . $multi_text[$i];
         $price = $price / 100;
         $cost = $cost / 100;
         $cost_2 = $cost_2 / 100;
-        $sql = "UPDATE `shua_guanjia` SET `price` = " . $price . ", `cost` = " . $cost . ", `cost2` = " . $cost_2 . ", `status` = 1 WHERE `shua_guanjia`.`tid` = " . $tid . ";";
+        $sql = "UPDATE `shua_guanjia` SET `price` = " . $price . ", `cost` = " . $cost . ", `cost2` = " . $cost_2 . ", `status` = " . $status . " WHERE `shua_guanjia`.`tid` = " . $tid . ";";
         if ($DB->query($sql)) {
             $code = 1;
             $msg = "设置成功";
@@ -757,6 +895,7 @@ WHERE shua_tools.cid = " . $multi_text[$i];
         $price;
         $cost;
         $cost2;
+        $status_guanjia;
         $price_guanjia;
         $cost_guanjia;
         $cost2_guanjia;
@@ -768,6 +907,7 @@ WHERE shua_tools.cid = " . $multi_text[$i];
         $shequ_pwd;
         $shequ_type;
         $shequ_paytype;
+        $json;
         //是否社区商品
         $is_curl;
         $tid = intval($_GET['tid']);
@@ -794,26 +934,46 @@ WHERE shua_tools.cid = " . $multi_text[$i];
             $price_guanjia = $res['price'];
             $cost_guanjia = $res['cost'];
             $cost2_guanjia = $res['cost2'];
+            $status_guanjia = $res['status'];
         }
         if ($is_curl == "2") {
             if ($shequ_type == 1 || $shequ_type == "1") {
 //            亿乐社区开始
-                $url1 = "http://" . $shequ_url . "/index/index_ajax/user/action/login.html";
-                $url2 = "http://" . $shequ_url . "/index/home/order/id/" . $goods_id . ".html";
-                $post = "user=" . $shequ_account . "&pwd=" . $shequ_pwd . "";
-                $result = king_Crawler($post, $url1, $url2);
-                $sign = stripos($result, "<title>");//根据有无<title>判断是否处于防护中
-                if ($sign > 0) {
-                } else {
-                    $test = king_Crawler_2($url, "", "", "");
-                    $data_sign = midstr($test, "'cookie' : \"", "\",");
-                    $data_date = king_get_Date();
-                    $yile_cookie = "verynginx_sign_javascript=" . $data_sign . "; path=/; expires=" . $data_date;
-                    $result = king_Crawler_1($url1, $url2, "", $post, $yile_cookie);
+//                $url1 = "http://" . $shequ_url . "/index/index_ajax/user/action/login.html";
+//                $url2 = "http://" . $shequ_url . "/index/home/order/id/" . $goods_id . ".html";
+//                $post = "user=" . $shequ_account . "&pwd=" . $shequ_pwd . "";
+//                $result = king_Crawler($post, $url1, $url2);
+//                $sign = stripos($result, "<title>");//根据有无<title>判断是否处于防护中
+//                if ($sign > 0) {
+//                } else {
+//                    $test = king_Crawler_2($url, "", "", "");
+//                    $data_sign = midstr($test, "'cookie' : \"", "\",");
+//                    $data_date = king_get_Date();
+//                    $yile_cookie = "verynginx_sign_javascript=" . $data_sign . "; path=/; expires=" . $data_date;
+//                    $result = king_Crawler_1($url1, $url2, "", $post, $yile_cookie);
+//                }
+//                $re1 = '/Number\(\"([0-9]+\.\S+)\"/';
+//                $float1 = king_Regular($result, $re1);
+                $test = king_get_yile($shequ_account, $shequ_pwd, $shequ_url, $goods_id);
+                $json = json_decode($test);
+                $status = $json->status . "";
+                $messag = $json->message;
+                if ($status == "-105") {
+                    $price_chengben = "该对接社区Token配置有误";
                 }
-                $re1 = '/Number\(\"([0-9]+\.\S+)\"/';
-                $float1 = king_Regular($result, $re1);
-                $price_chengben = $float1 * $value;
+
+                if ($status == "-1") {
+                    $price_chengben = "该商品ID不存在";
+                }
+                if ($status == "0") {
+                    $close = $json->data->close . "";
+                    if ($close == "1") {
+                        $price_chengben = 0;
+                    } else {
+                        $float1 = floatval($json->data->price . "");
+                        $price_chengben = $float1 * $value;
+                    }
+                }
             } else if ($shequ_type == 0 || $shequ_type == "0" || $shequ_type == 2 || $shequ_type == "2") {
                 //玖伍系统开始
                 $post = "username=" . $shequ_account . "&username_password=" . $shequ_pwd . "";
@@ -833,6 +993,28 @@ WHERE shua_tools.cid = " . $multi_text[$i];
                 $re1 = '/money_dian\"\>(\S+)\<\/span\>/';
                 $float1 = king_Regular($result, $re1);
                 $price_chengben = $float1 * $value;
+            } else if ($shequ_type == 11 || $shequ_type == "11") {
+                //聚梦社区开始
+                $i = 0;
+                $result = king_Crawler_2("http://" . $shequ_url . "/Order/ApiGoods.html", "", "", "");
+                $json = json_decode($result, true);
+                $length = sizeof($json);
+                for ($i = 0; $i < $length; $i++) {
+                    if ($json[$i]['Id'] == $goods_id) {
+//                        $float1 = $json[$i]['Money'];
+                        break;
+                    }
+                }
+                if ($json[$i]['MoneyStatus'] != 1) {
+                    $price_chengben = "商品维护";
+                } else {
+                    $post = "id=" . $goods_id . "&user=" . $shequ_account . "&pwd=" . $shequ_pwd . "&jz=0";
+                    $url1 = "http://" . $shequ_url . "/Login/UserLogin.html";
+                    $url2 = "http://" . $shequ_url . "/form.html?goodsid=" . $goods_id;
+                    $result = king_Crawler($post, $url1, $url2);
+                    $float1 = midstr($result, "id=\"money_dian\">", "</span>");
+                    $price_chengben = $float1 * $value;
+                }
             } else {
                 $price_chengben = "暂不支持该社区的成本价格获取";
             }
@@ -848,16 +1030,16 @@ WHERE shua_tools.cid = " . $multi_text[$i];
         if ($is_curl != "2") {
             $price_chengben = "不支持的商品类型";
             if ($is_curl == "0") {
-                $shequ_type = "11";
-            } else if ($is_curl == "1") {
                 $shequ_type = "12";
-            } else if ($is_curl == "3") {
+            } else if ($is_curl == "1") {
                 $shequ_type = "13";
-            } else if ($is_curl == "4") {
+            } else if ($is_curl == "3") {
                 $shequ_type = "14";
+            } else if ($is_curl == "4") {
+                $shequ_type = "15";
             }
         }
-        $data[] = array('shequ' => $shequ_type, 'chengben' => $price_chengben, 'price' => $price, 'cost' => $cost, 'cost2' => $cost2, 'price_guanjia' => $price_guanjia, 'cost_guanjia' => $cost_guanjia, 'cost2_guanjia' => $cost2_guanjia);
+        $data[] = array('shequ' => $shequ_type, 'shequ_url' => $shequ_url, 'chengben' => $price_chengben, 'status_guanjia' => $status_guanjia, 'price' => $price, 'cost' => $cost, 'cost2' => $cost2, 'price_guanjia' => $price_guanjia, 'cost_guanjia' => $cost_guanjia, 'cost2_guanjia' => $cost2_guanjia);
         $result = array("code" => 0, "msg" => "succ", "data" => $data);
         exit(json_encode($result));
         break;
