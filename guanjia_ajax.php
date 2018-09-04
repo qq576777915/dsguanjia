@@ -805,6 +805,28 @@ WHERE shua_tools.cid = " . $multi_text[$i];
                 $re1 = '/money_dian\"\>(\S+)\<\/span\>/';
                 $float1 = king_Regular($result, $re1);
                 $data_3[3][0] = $float1 * $data_3[2][0];
+            } else if ($shequ_type == 11 || $shequ_type == "11") {
+                //聚梦社区开始
+                $i = 0;
+                $result = king_Crawler_2("http://" . $shequ_url . "/Order/ApiGoods.html", "", "", "");
+                $json = json_decode($result, true);
+                $length = sizeof($json);
+                for ($i = 0; $i < $length; $i++) {
+                    if ($json[$i]['Id'] == $goods_id) {
+//                        $float1 = $json[$i]['Money'];
+                        break;
+                    }
+                }
+                if ($json[$i]['MoneyStatus'] != 1) {
+                    $data_3[3][0] = 0;
+                } else {
+                    $post = "id=" . $goods_id . "&user=" . $shequ_account . "&pwd=" . $shequ_pwd . "&jz=0";
+                    $url1 = "http://" . $shequ_url . "/Login/UserLogin.html";
+                    $url2 = "http://" . $shequ_url . "/form.html?goodsid=" . $goods_id;
+                    $result = king_Crawler($post, $url1, $url2);
+                    $float1 = midstr($result, "id=\"money_dian\">", "</span>");
+                    $data_3[3][0] = $float1 * $data_3[2][0];
+                }
             } else {
                 $data_3[3][0] = "0";
             }
