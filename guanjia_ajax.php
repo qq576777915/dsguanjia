@@ -600,6 +600,8 @@ WHERE shua_tools.cid = " . $multi_text[$i];
         $data_4[5][1];
         //收集上个商品信息 0=社区ID 1=商品ID 2=商品数量 3=成本_用户 4=成本_普及 5=成本_专业 6=上架状态
         $data_5[6][1];
+        //收集上个商品管家信息 0=price 1=cost 2=cost2
+        $data_6[3][1];
         //自动上下架  1=是 2=否
         $auto_sjx;
         //折扣率
@@ -669,8 +671,14 @@ WHERE shua_tools.cid = " . $multi_text[$i];
                     $data_5[5][0] = $res['cost2'];
                     $data_5[6][0] = $res['active'];
                 }
-                if ($data_5[3][0] > 0.01 && $data_5[4][0] > 0.01 && $data_5[5][0] > 0.01) {
-                    //上款商品不为0不为空不为0.01、
+                $rs = $DB->query("SELECT * FROM shua_guanjia WHERE tid =" . $last_tid);
+                while ($res = $DB->fetch($rs)) {
+                    $data_6[0][0] = $res['price'];
+                    $data_6[1][0] = $res['cost'];
+                    $data_6[2][0] = $res['cost2'];
+                }
+                if ($data_5[3][0] > 0.01 && $data_5[4][0] > 0.01 && $data_5[5][0] > 0.01 && $data_6[0][0] != null && $data_6[1][0] != null && $data_6[2][0] != null) {
+                    //上款商品不为0不为空不为0.01、且上个商品有管家值
                     $goods_bl = $data_3[2][0] / $data_5[2][0];  // 这个商品：上个商品
                     if ($data_3[2][0] > $data_5[2][0] && $discount != 0) {
                         //开启了折扣率
