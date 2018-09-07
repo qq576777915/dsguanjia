@@ -5,6 +5,7 @@ $act = isset($_GET['act']) ? daddslashes($_GET['act']) : null;
 if ($is_fenzhan == true) {
     $price_obj = new Price($siterow['zid'], $siterow);
 }
+
 function gbk_to_utf8($data)
 {
     if (is_array($data)) {
@@ -677,8 +678,9 @@ WHERE shua_tools.cid = " . $multi_text[$i];
                     $data_6[1][0] = $res['cost'];
                     $data_6[2][0] = $res['cost2'];
                 }
-                if ($data_5[3][0] > 0.01 && $data_5[4][0] > 0.01 && $data_5[5][0] > 0.01 && $data_6[0][0] != null && $data_6[1][0] != null && $data_6[2][0] != null) {
+                if ($data_5[3][0] > 1 && $data_5[4][0] > 1 && $data_5[5][0] > 1 && $data_6[0][0] != null && $data_6[1][0] != null && $data_6[2][0] != null) {
                     //上款商品不为0不为空不为0.01、且上个商品有管家值
+                    //上个商品必须 不为美化之后的价格 不然继承美化后的价格 将出错
                     $goods_bl = $data_3[2][0] / $data_5[2][0];  // 这个商品：上个商品
                     if ($data_3[2][0] > $data_5[2][0] && $discount != 0) {
                         //开启了折扣率
@@ -832,7 +834,11 @@ WHERE shua_tools.cid = " . $multi_text[$i];
                     $url1 = "http://" . $shequ_url . "/Login/UserLogin.html";
                     $url2 = "http://" . $shequ_url . "/form.html?goodsid=" . $goods_id;
                     $result = king_Crawler($post, $url1, $url2);
+                    sleep(1);
                     $float1 = midstr($result, "id=\"money_dian\">", "</span>");
+                    if (strlen($float1) == 0) {
+                        $float1 = midstr($result, "user_unit_rmb\" style=\"display:none;\">", "</span>");
+                    }
                     $data_3[3][0] = $float1 * $data_3[2][0];
                 }
             } else {
@@ -1043,6 +1049,9 @@ WHERE shua_tools.cid = " . $multi_text[$i];
                     $url2 = "http://" . $shequ_url . "/form.html?goodsid=" . $goods_id;
                     $result = king_Crawler($post, $url1, $url2);
                     $float1 = midstr($result, "id=\"money_dian\">", "</span>");
+                    if (strlen($float1) == 0) {
+                        $float1 = midstr($result, "user_unit_rmb\" style=\"display:none;\">", "</span>");
+                    }
                     $price_chengben = $float1 * $value;
                 }
             } else {

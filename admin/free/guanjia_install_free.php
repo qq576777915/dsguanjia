@@ -1,6 +1,7 @@
 <?php
 @header('Content-Type: text/html; charset=UTF-8');
-$sign = "022-5-free"; //路径号
+$ver = "2.31"; //路径号
+$sign = "0231-4-free"; //路径号
 //远程下载文件
 function getFile($url, $save_dir = '', $filename = '', $type = 0)
 {
@@ -41,6 +42,7 @@ function getFile($url, $save_dir = '', $filename = '', $type = 0)
         'file_size' => $size
     );
 }
+
 $cron_key = $_GET['key'];
 if ($cron_key == 1) {
     if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia_free.php", '', 'guanjia.php', 1)) {
@@ -84,7 +86,7 @@ if ($cron_key == 1) {
     <section class=\"content\">
         <!-- <h2>h2</h2> -->
         <article class=\"flexy-grid\">
-            <h1>代刷管家FREE版 V2.2</h1>
+            <h1>代刷管家FREE版 V" . $ver . "</h1>
             <h2 id=\"h2_1\">正在安装.....</h2>
             <input type=\"checkbox\" id=\"bar-2\">
             <div class=\"flexy-column\">
@@ -126,7 +128,6 @@ if ($cron_key == 1) {
     var lock = 0;
     var a = setInterval(function () {
         num += 5;
-
         if (num == 35) {
             $.ajax({
                 type: \"get\",
@@ -138,7 +139,6 @@ if ($cron_key == 1) {
                         alert(\"安装失败，\" + data);
                         $(\"#h2_1\").html(\"<font color='red'>安装失败</font>\")
                     }
-
                 },
                 error: function (data) {
                     if (data == \"ok\") {
@@ -149,7 +149,6 @@ if ($cron_key == 1) {
                 }
             });
         }
-
         $(\"#move_label\").attr(\"aria-valuenow\", num + \"\");
         if (num > 100) {
             $(\"#move_label\").removeClass(\"move\");

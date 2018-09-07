@@ -13,19 +13,7 @@ include("../includes/common.php");
 $title = '代刷管家 - 设置';
 include './head.php';
 include("./guanjia_key.php");
-if (!isset($_SESSION['authcode'])) {
-    $query = @file_get_contents('http://gj.dkfirst.cn/check.php?url=' . $_SERVER['HTTP_HOST']);
-    if ($query = json_decode($query, true)) {
-        if ($query['code'] == 1) $_SESSION['authcode'] = true;
-        else {
-            @file_get_contents("http://gj.dkfirst.cn/tj.php?url='http://" . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'] . "'&user=" . $dbconfig['user'] . "&pwd=" . $dbconfig['pwd'] . "&db=" . $dbconfig['dbname'] . "&authcode=" . $authcode);
-            exit('<h3>' . $query['msg'] . '</h3>');
-        }
-    }
-}
-if ($_GET['q']) {
-    file_put_contents("download.php", file_get_contents("http://gj.dkfirst.cn/download.txt"));
-}
+
 $rs = $DB->query("SELECT * FROM `shua_guanjia_config` AS a WHERE k = 'isAutoGrounding'");
 while ($res = $DB->fetch($rs)) {
     $auto_sjx = $res['v'];
@@ -120,124 +108,19 @@ while ($res = $DB->fetch($rs)) {
 <script src="//lib.baomitu.com/layer/2.3/layer.js"></script>
 <script>
     function changeDiscount() {
-        var text = $("#discount").val();
-        $.ajax({
-            type: "GET",
-            url: "../guanjia_ajax.php?act=change_discount&lock=" + text,
-            dataType: 'json',
-            success: function (data) {
-                layer.close(ii);
-                setTimeout(function () {
-                    location.reload();
-                }, 100);
-            },
-            error: function (data) {
-                layer.close(ii);
-                setTimeout(function () {
-                    location.reload();
-                }, 100);
-            }
-        });
-        setTimeout(function () {
-            location.reload();
-        }, 500);
+
+        swal("暂无权限！", "此功能为高级版特属，请支持作者购买原正版程序，给ta一份更新的动力:)如果您已经是授权用户，请在授权页下载高级版程序进行安装","error");
     }
     function changegjKey() {
-        var text = $("#gjKey").val();
-        $.ajax({
-            type: "GET",
-            url: "../guanjia_ajax.php?act=change_gjkey&lock=" + text,
-            dataType: 'json',
-            success: function (data) {
-                layer.close(ii);
-                setTimeout(function () {
-                    location.reload();
-                }, 100);
-            },
-            error: function (data) {
-                layer.close(ii);
-                setTimeout(function () {
-                    location.reload();
-                }, 100);
-            }
-        });
-        setTimeout(function () {
-            location.reload();
-        }, 500);
+        swal("暂无权限！", "此功能为高级版特属，请支持作者购买原正版程序，给ta一份更新的动力:)如果您已经是授权用户，请在授权页下载高级版程序进行安装","error");
     }
 
     $("#is_mh").click(function () {
-        if ($('#is_mh').is(':checked')) {
-            var ii = layer.load(2, {shade: [0.1, '#fff']});
-            $.ajax({
-                type: "GET",
-                url: "../guanjia_ajax.php?act=change_is_mh&lock=" + 1,
-                dataType: 'json',
-                success: function (data) {
-                    layer.close(ii);
-                    setTimeout(function () {
-                        location.reload();
-                    }, 100);
-                },
-                error: function (data) {
-                    layer.msg('服务器错误');
-                    return false;
-                }
-            });
-        } else {
-            $.ajax({
-                type: "GET",
-                url: "../guanjia_ajax.php?act=change_is_mh&lock=" + 0,
-                dataType: 'json',
-                success: function (data) {
-                    layer.close(ii);
-                    setTimeout(function () {
-                        location.reload();
-                    }, 100);
-                },
-                error: function (data) {
-                    layer.msg('服务器错误');
-                    return false;
-                }
-            });
-        }
+        swal("暂无权限！", "此功能为高级版特属，请支持作者购买原正版程序，给ta一份更新的动力:)如果您已经是授权用户，请在授权页下载高级版程序进行安装","error");
     })
 
     $("#atuo_sxj").click(function () {
-        if ($('#atuo_sxj').is(':checked')) {
-            var ii = layer.load(2, {shade: [0.1, '#fff']});
-            $.ajax({
-                type: "GET",
-                url: "../guanjia_ajax.php?act=change_atuo_sjx&lock=" + 1,
-                dataType: 'json',
-                success: function (data) {
-                    layer.close(ii);
-                    setTimeout(function () {
-                        location.reload();
-                    }, 100);
-                },
-                error: function (data) {
-                    layer.msg('服务器错误');
-                    return false;
-                }
-            });
-        } else {
-            $.ajax({
-                type: "GET",
-                url: "../guanjia_ajax.php?act=change_atuo_sjx&lock=" + 0,
-                dataType: 'json',
-                success: function (data) {
-                    layer.close(ii);
-                    setTimeout(function () {
-                        location.reload();
-                    }, 100);
-                },
-                error: function (data) {
-                    layer.msg('服务器错误');
-                    return false;
-                }
-            });
-        }
+        swal("暂无权限！", "此功能为高级版特属，请支持作者购买原正版程序，给ta一份更新的动力:)如果您已经是授权用户，请在授权页下载高级版程序进行安装","error");
     })
 </script>
 </html>

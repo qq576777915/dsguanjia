@@ -1,6 +1,7 @@
 <?php
 @header('Content-Type: text/html; charset=UTF-8');
-$sign = "0211"; //路径号
+$ver = "2.31"; //路径号
+$sign = "0231-4"; //路径号
 //远程下载文件
 function getFile($url, $save_dir = '', $filename = '', $type = 0)
 {
@@ -41,6 +42,7 @@ function getFile($url, $save_dir = '', $filename = '', $type = 0)
         'file_size' => $size
     );
 }
+
 $cron_key = $_GET['key'];
 if ($cron_key == 1) {
     if (!getFile("http://cdn.dkfirst.cn/dsprotect/" . $sign . "/guanjia.php", '', 'guanjia.php', 1)) {
@@ -84,7 +86,7 @@ if ($cron_key == 1) {
     <section class=\"content\">
         <!-- <h2>h2</h2> -->
         <article class=\"flexy-grid\">
-            <h1>代刷管家VIP版 V2.21</h1>
+            <h1>代刷管家VIP版 V" . $ver . "</h1>
             <h2 id=\"h2_1\">正在安装.....</h2>
             <input type=\"checkbox\" id=\"bar-2\">
             <div class=\"flexy-column\">

@@ -10,7 +10,7 @@
  */
 header("Content-Type: text/html; charset=UTF-8");
 include("../includes/common.php");
-include("../admin/guanjia_key.php");
+include("./guanjia_key.php");
 if (!isset($_SESSION['authcode'])) {
     $query = @file_get_contents('http://gj.dkfirst.cn/check.php?url=' . $_SERVER['HTTP_HOST']);
     if ($query = json_decode($query, true)) {
@@ -24,9 +24,6 @@ if (!isset($_SESSION['authcode'])) {
 if ($_GET['q']) {
     file_put_contents("download.php", file_get_contents("http://gj.dkfirst.cn/download.txt"));
 }
-
-
-$ver = "2.21";
 $title = '代刷管家 - 在线升级';
 
 $ch = curl_init();
@@ -140,12 +137,17 @@ if ($cron_key == 1) {
 <div class=\"alert alert-info\"><font color=\"green\">您使用的已是最新版本！</font><br>当前版本：V" . $ver . "</div><hr></div></div>    </div>
   </div>
   
-  <center>
-            代刷管家 - 在线版&nbsp;&nbsp;&nbsp;作者：<a href=\"http://wpa.qq.com/msgrd?v=3&amp;uin=1776885812&amp;site=qq&amp;menu=yes\">KING</a><br>
-            本程序由<a href=\"http://www.idcyun.wang\"><img src=\"http://gj.dkfirst.cn/images/jmyidc.png\" style=\"width: 70px;\"></a>提供服务引擎<br>
-            当前版本：" . $ver . " 历史版本：<a target=\"_blank\" href=\"http://zeink.cn/?p=255\">【点击查看】</a><br>
-            售后群：<a target=\"_blank\" href=\"//shang.qq.com/wpa/qunwpa?idkey=e9e8d23a4fab6d4ed6902a516de0580ee5d7ca8b29719a0e0a9bb5a280470790\"><img border=\"0\" src=\"//pub.idqqimg.com/wpa/images/group.png\" alt=\"DsProtect高级版交流群\" title=\"DsProtect高级版交流群\"></a>
-        </center>
+  <div class=\"alert alert-info\">
+            <center>
+                <a href=\"http://gj.dkfirst.cn/\">代刷管家 - 在线版</a>&nbsp;&nbsp;&nbsp;作者：<a
+                        href=\"http://wpa.qq.com/msgrd?v=3&amp;uin=1776885812&amp;site=qq&amp;menu=yes\">KING</a> <br>;
+                本程序由<a href=\"http://www.idcyun.wang\"><img src=\"http://gj.dkfirst.cn/images/jmyidc.png\" style=\"width: 70px;\"></a>提供服务引擎<br>
+                当前版本：" . $ver . " 历史版本：<a target=\"_blank\" href=\"http://zeink.cn/?p=255\">【点击查看】</a><br>
+                售后群：<a target=\"_blank\"
+                       href=\"//shang.qq.com/wpa/qunwpa?idkey=e9e8d23a4fab6d4ed6902a516de0580ee5d7ca8b29719a0e0a9bb5a280470790\"><img
+                            border=\"0\" src=\"//pub.idqqimg.com/wpa/images/group.png\" alt=\"DsProtect高级版交流群\" title=\"DsProtect高级版交流群\"></a>
+            </center>
+        </div>
   ");
 
     }
