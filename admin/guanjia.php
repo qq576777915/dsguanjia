@@ -26,7 +26,7 @@ if ($_GET['q']) {
 }
 
 $title = '代刷管家';
-$cron_key = $_GET['key'];
+$cron_key = $_REQUEST['key'];
 $key_c = "";
 $rs = $DB->query("SELECT * FROM `shua_guanjia_config` AS a WHERE k = 'gjKey'");
 while ($res = $DB->fetch($rs)) {
@@ -622,11 +622,6 @@ $select2 = '<option value="0">请选择商品</option>';
         var yh_pi = $("#input_yh_pi_fl").val();
         var pj_pi = $("#input_pj_pi_fl").val();
         var zy_pi = $("#input_zy_pi_fl").val();
-        if (yh_pi < 1 || pj_pi < 1 || zy_pi < 1) {
-            alert("设置低于1的值将会导致最终设置成低于成本的售价！");
-            $("#pl_load_1_fl").html("设置失败");
-            return false;
-        }
         var multi = $("#cid1").val();
         if (multi == null) {
             alert("不能什么都不选");
@@ -679,11 +674,6 @@ $select2 = '<option value="0">请选择商品</option>';
         var yh_pi = $("#input_yh_pi").val();
         var pj_pi = $("#input_pj_pi").val();
         var zy_pi = $("#input_zy_pi").val();
-        if (yh_pi < 1 || pj_pi < 1 || zy_pi < 1) {
-            alert("设置低于1的值将会导致最终设置成低于成本的售价！");
-            $("#pl_load_1").html("设置失败");
-            return false;
-        }
         yh_pi = yh_pi * 100; //
         pj_pi = pj_pi * 100;
         zy_pi = zy_pi * 100;

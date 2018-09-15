@@ -709,6 +709,9 @@ WHERE shua_tools.cid = " . $multi_text[$i];
                             //如果上个商品下架了 一起下架
                             $sql = "UPDATE `shua_tools` SET `active` = '0' WHERE `shua_tools`.`tid` = " . $tid . ";";
                             $DB->query($sql);
+                        } else{
+                            $sql = "UPDATE `shua_tools` SET `active` = '1' WHERE `shua_tools`.`tid` = " . $tid . ";";
+                            $DB->query($sql);
                         }
                         $code = 1;
                         $msg = $msg . "设置成功";
